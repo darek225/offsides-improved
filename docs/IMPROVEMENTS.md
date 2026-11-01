@@ -170,3 +170,15 @@ Goal (Darek): look as close as possible to the real YikYak app
 - Behavior unchanged from v1.1.0. A dev-only Preview screen (sample
   posts/poll, no login) renders when built with EXPO_PUBLIC_PREVIEW=1
   so CI can screenshot the design; release builds never route to it.
+
+## Live verification on Darek's account (2026-11-01)
+
+Darek logged in himself on v1.2.0 and tried to comment. The batch-2
+error surfacing did its job: **"Server said: This identity is
+currently suspended."** So the original "couldn't post or reply" was
+not (only) the app swallowing errors - the account's identity is
+suspended server-side. No client change can fix that; the open
+questions are scope (identity/group-scoped vs account-wide, test by
+posting in another group and by sending a DM) and appeal via Sidechat
+support. Confirmed working in the same screenshot: draft kept after
+the failed send, 255-char counter, v1.2.0 dark composer.
