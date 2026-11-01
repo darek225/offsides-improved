@@ -1,4 +1,4 @@
-package com.micahlindley.offsides
+package com.darekanderson.offsides
 
 import android.app.Application
 import android.content.res.Configuration
