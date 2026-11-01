@@ -133,3 +133,13 @@ maintainer. API layer: micahlt/sidechat.js 2.6.6. Audit date: 2026-11-01.
   offsides-for-android, harmless for a sideloaded build), and the Kotlin
   sources had to move to the new package so generated R/BuildConfig
   resolve.
+- Emulator smoke test (`.github/workflows/test-apk.yml`, run 41323805081):
+  the shipped arm64 APK installs cleanly ("Success") but cannot start on
+  the x86_64 CI emulator (SoLoader cannot find libreactnative.so under
+  ARM translation; impossible on a native arm64 phone). A dual-ABI test
+  build with identical code installed, launched to the login screen
+  ("Welcome to Offsides", phone number + Send code), stayed alive
+  (MainActivity RESUMED, process running), and logged zero FATAL
+  EXCEPTIONs; JS bundle confirmed running in logcat. The only JS error
+  was the benign "No phone number hints available" (emulator has no
+  SIM). Everything past the login screen still needs a real account.
