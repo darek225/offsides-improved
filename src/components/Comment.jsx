@@ -290,19 +290,14 @@ function Comment({ comment, nav, isolated = false }) {
               margin: 0,
             }}
             size={12}
-            iconColor={
-              vote == 'upvote' ? colors.onPrimaryContainer : colors.onSurface
-            }
-            containerColor={
-              vote == 'upvote' ? colors.inversePrimary : colors.surfaceDisabled
-            }
+            iconColor={vote == 'upvote' ? colors.primary : colors.onSurfaceVariant}
           />
           <Text
             variant="titleMedium"
             style={{
               marginRight: 10,
               marginLeft: 10,
-              color: voteCount <= 0 ? colors.error : colors.primary,
+              color: vote == 'upvote' ? colors.primary : vote == 'downvote' ? colors.error : colors.onSurface,
             }}>
             {voteCount}
           </Text>
@@ -313,10 +308,7 @@ function Comment({ comment, nav, isolated = false }) {
               margin: 0,
             }}
             size={12}
-            iconColor={vote == 'downvote' ? colors.onError : colors.onSurface}
-            containerColor={
-              vote == 'downvote' ? colors.error : colors.surfaceDisabled
-            }
+            iconColor={vote == 'downvote' ? colors.error : colors.onSurfaceVariant}
           />
         </View>
       </Card.Content>

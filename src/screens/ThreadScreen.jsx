@@ -224,18 +224,18 @@ function ThreadScreen({ navigation, route }) {
             borderless={true}
             onPress={() => { }}
             style={{
-              borderRadius: 10,
+              borderRadius: 16,
               marginLeft: item.authored_by_user ? 50 : 0,
               marginRight: item.authored_by_user ? 0 : 50,
             }}>
             <Surface
               key={item.id}
               style={{
-                padding: 15,
-                borderRadius: 10,
+                padding: 12,
+                borderRadius: 16,
                 backgroundColor: item.authored_by_user
-                  ? colors.secondaryContainer
-                  : colors.elevation.level1,
+                  ? colors.primary
+                  : colors.surfaceVariant,
               }}
               mode="flat">
               {isGroup && !item.authored_by_user && senderName(item) && (
@@ -259,12 +259,21 @@ function ThreadScreen({ navigation, route }) {
                   />
                 ))}
               {!!item.text && (
-                <Text style={{ color: colors.onSurface }} variant="bodyLarge">
+                <Text
+                  style={{
+                    color: item.authored_by_user ? '#000000' : colors.onSurface,
+                    fontWeight: item.authored_by_user ? '500' : 'normal',
+                  }}
+                  variant="bodyLarge">
                   {item.text}
                 </Text>
               )}
               <Text
-                style={{ color: colors.onSurfaceDisabled }}
+                style={{
+                  color: item.authored_by_user
+                    ? 'rgba(0,0,0,0.55)'
+                    : colors.onSurfaceDisabled,
+                }}
                 variant="labelMedium">
                 {timesago(item.created_at)}
               </Text>

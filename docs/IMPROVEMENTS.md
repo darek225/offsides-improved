@@ -143,3 +143,30 @@ maintainer. API layer: micahlt/sidechat.js 2.6.6. Audit date: 2026-11-01.
   EXCEPTIONs; JS bundle confirmed running in logcat. The only JS error
   was the benign "No phone number hints available" (emulator has no
   SIM). Everything past the login screen still needs a real account.
+
+## v1.2.0 - YikYak visual redesign (2026-11-01)
+
+Goal (Darek): look as close as possible to the real YikYak app
+(current iOS v5.8.15 - dark-only design).
+
+- **Theme (index.js):** dynamic Material You replaced with a fixed dark
+  theme - black background (#000000), near-black cards (#1C1C1E),
+  white text, gray secondary (#A7A7AD), teal accent (#00DDB4).
+  HomeScreen's per-group generated Material You theme is disabled for
+  the same reason (it recolored the whole UI per community).
+- **Post card:** radius 20; header is now community name + "• time"
+  (was time-first), username demoted to a gray second line (anon fix
+  from batch 1 unchanged); DM icon is a paper plane; share button
+  added; vote cluster matches the reference: rounded-square outline
+  buttons, teal outline/arrow/score when upvoted, red when downvoted,
+  white/gray otherwise. Comment cards use the same vote colors.
+- **Polls:** pill bars; your pick filled blue (#2F80ED, as in the real
+  app), others dark gray; vote counts + percentages right-aligned in
+  gray; total votes row under revealed results.
+- **Chats:** your bubbles are teal with black text, theirs dark gray;
+  radius 16.
+- **Chrome:** feed app bar sits on black; Post FAB is teal with a
+  black label; login pattern dimmed, dark card, "Offsides+" name.
+- Behavior unchanged from v1.1.0. A dev-only Preview screen (sample
+  posts/poll, no login) renders when built with EXPO_PUBLIC_PREVIEW=1
+  so CI can screenshot the design; release builds never route to it.

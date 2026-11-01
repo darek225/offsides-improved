@@ -1,6 +1,6 @@
 import { SidechatPostOrComment } from 'sidechat.js/src/types/SidechatTypes.js';
 import React, { useState } from 'react';
-import { Alert, Linking, Pressable, ToastAndroid, View } from 'react-native';
+import { Alert, Linking, Pressable, Share, ToastAndroid, View } from 'react-native';
 import { Card, Chip, IconButton, Menu, Text, useTheme } from 'react-native-paper';
 import { setStringAsync as copyToClipboard } from 'expo-clipboard';
 import timesago from 'timesago';
@@ -110,7 +110,7 @@ function Post({
         if (newWidth !== width) setWidth(newWidth);
       }}
       mode={cardMode}
-      style={repost ? { marginBottom: 10 } : {}}>
+      style={repost ? { marginBottom: 10, borderRadius: 20, overflow: 'hidden' } : { borderRadius: 20, overflow: 'hidden' }}>
       <Card.Content>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Pressable onPress={openProfile} disabled={!canOpenProfile} hitSlop={4}>
@@ -127,8 +127,11 @@ function Post({
               flexDirection: 'column',
               flex: 1,
             }}>
-            <Text variant="labelLarge" style={{ marginLeft: 10 }}>
-              {timesago(post.created_at)}
+            <Text variant="titleMedium" style={{ marginLeft: 10 }}>
+              {group?.name ? `${group.name} ` : ''}
+              <Text style={{ fontSize: 13, color: colors.onSurfaceVariant }}>
+                • {timesago(post.created_at)}
+              </Text>
             </Text>
             {hasUsername ? (
               <Text
@@ -137,7 +140,7 @@ function Post({
                 style={{
                   marginLeft: 10,
                   opacity: 0.75,
-                  color: canOpenProfile ? colors.primary : undefined,
+                  color: colors.onSurfaceVariant,
                 }}>
                 @{identity.name}
               </Text>
@@ -276,7 +279,7 @@ function Post({
           )}
           {!post.dms_disabled && (
             <IconButton
-              icon="chat-outline"
+              icon="send-outline"
               onPress={() =>
                 nav.push('Thread', {
                   postID: post.id,
@@ -296,43 +299,53 @@ function Post({
             size={24}
             iconColor={colors.onSurfaceDisabled}
           />
+          <IconButton
+            icon="share-variant-outline"
+            onPress={() =>
+              Share.share({ message: post.text || '' }).catch(() => {})
+            }
+            style={{ margin: 0 }}
+            size={22}
+            iconColor={colors.onSurfaceDisabled}
+          />
           <View style={{ flexGrow: 1 }}></View>
           <IconButton
-            icon="arrow-up-thick"
+            icon="arrow-up-bold"
             onPress={upvote}
             style={{
               margin: 0,
-              borderRadius: BORDER_RADIUS,
-              borderColor: colors.onSurfaceDisabled,
-              borderWidth: 2,
+              borderRadius: 10,
+              borderColor: vote == 'upvote' ? colors.primary : colors.outline,
+              borderWidth: 1.5,
             }}
             size={20}
-            iconColor={
-              vote == 'upvote' ? colors.onPrimaryContainer : colors.onSurface
-            }
-            containerColor={vote == 'upvote' ? colors.inversePrimary : null}
+            iconColor={vote == 'upvote' ? colors.primary : colors.onSurface}
           />
           <Text
             variant="titleMedium"
             style={{
               marginRight: 10,
               marginLeft: 10,
-              color: voteCount <= 0 ? colors.error : colors.primary,
+              color:
+                vote == 'upvote'
+                  ? colors.primary
+                  : vote == 'downvote'
+                    ? colors.error
+                    : colors.onSurface,
             }}>
             {voteCount}
           </Text>
           <IconButton
-            icon="arrow-down-thick"
+            icon="arrow-down-bold"
             onPress={downvote}
             style={{
               margin: 0,
-              borderRadius: BORDER_RADIUS,
-              borderColor: colors.onSurfaceDisabled,
-              borderWidth: 2,
+              borderRadius: 10,
+              borderColor: vote == 'downvote' ? colors.error : colors.outline,
+              borderWidth: 1.5,
             }}
             size={20}
-            iconColor={vote == 'downvote' ? colors.onError : colors.onSurface}
-            containerColor={vote == 'downvote' ? colors.error : null}
+            iconColor={vote == 'downvote' ? colors.error : colors.onSurface}
           />
         </View>}
       </Card.Content>

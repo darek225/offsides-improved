@@ -17,6 +17,7 @@ import EditProfileScreen from './screens/EditProfileScreen';
 import WriterScreen from './screens/WriterScreen';
 import MessageScreen from './screens/MessagesScreen';
 import ThreadScreen from './screens/ThreadScreen';
+import PreviewScreen from './screens/PreviewScreen';
 import UserProfileScreen from './screens/UserProfileScreen';
 import { storage, hasMigratedFromAsyncStorage, migrateFromAsyncStorage } from './utils/mmkv';
 import { useMMKVString } from 'react-native-mmkv';
@@ -89,11 +90,11 @@ export default function App() {
         <AppContext.Provider value={{ appState, setAppState }}>
           <NavigationContainer>
             <StatusBar
-              barStyle={colorScheme == 'dark' ? 'light-content' : 'dark-content'}
+              barStyle="light-content"
             />
             {needsLogin != null && appState != null && (
               <Stack.Navigator
-                initialRouteName={needsLogin ? 'Login' : 'Home'}
+                initialRouteName={process.env.EXPO_PUBLIC_PREVIEW === '1' ? 'Preview' : needsLogin ? 'Login' : 'Home'}
                 screenOptions={{ headerShown: false }}>
                 <Stack.Screen
                   name="Home"
@@ -104,6 +105,7 @@ export default function App() {
                   })}
                 />
                 <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="Preview" component={PreviewScreen} />
                 <Stack.Screen name="Settings" component={SettingsScreen} />
                 <Stack.Screen name="MyProfile" component={MyProfileScreen} />
                 <Stack.Screen name="UserProfile" component={UserProfileScreen} />

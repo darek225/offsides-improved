@@ -63,28 +63,37 @@ function Poll({ poll }) {
           onPress={() => setVote(index)}
           borderless={true}
           style={{
-            marginBottom: 5,
-            borderRadius: 10,
+            marginBottom: 8,
+            borderRadius: 12,
           }}>
           <View
             style={{
               backgroundColor: option.selected
-                ? colors.primaryContainer
-                : colors.onSecondary,
-              padding: 10,
-              borderRadius: 10,
+                ? '#2F80ED'
+                : colors.surfaceVariant,
+              paddingVertical: 12,
+              paddingHorizontal: 14,
+              borderRadius: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
             }}>
             {!!option?.text ? (
               <Text
-                style={{ color: colors.onSecondaryContainer }}
+                style={{ color: '#FFFFFF', flex: 1, fontWeight: '600' }}
                 variant="labelLarge">
                 {option.text}
               </Text>
             ) : (
-              <></>
+              <View style={{ flex: 1 }} />
             )}
             {showResults && (
-              <Text variant="bodySmall">
+              <Text
+                variant="bodyMedium"
+                style={{
+                  color: option.selected
+                    ? '#D6E9FF'
+                    : colors.onSurfaceVariant,
+                }}>
                 {option.count || 0} votes
                 {totalVotes > 0
                   ? ` · ${Math.round(((option.count || 0) / totalVotes) * 100)}%`
@@ -92,27 +101,15 @@ function Poll({ poll }) {
               </Text>
             )}
           </View>
-          {showResults && totalVotes > 0 && (
-            <View
-              style={{
-                height: 4,
-                borderRadius: 2,
-                backgroundColor: colors.surfaceVariant,
-                marginTop: -8,
-                marginBottom: 5,
-                overflow: 'hidden',
-              }}>
-              <View
-                style={{
-                  height: '100%',
-                  width: `${Math.round(((option.count || 0) / totalVotes) * 100)}%`,
-                  backgroundColor: colors.primary,
-                }}
-              />
-            </View>
-          )}
         </TouchableRipple>
       ))}
+      {showResults && (
+        <Text
+          variant="bodySmall"
+          style={{ color: colors.onSurfaceVariant, marginTop: 2 }}>
+          {totalVotes} votes
+        </Text>
+      )}
       {!showResults && (
         <TouchableRipple
           onPress={viewResults}

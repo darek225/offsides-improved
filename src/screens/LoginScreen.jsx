@@ -290,7 +290,7 @@ function LoginScreen({ }) {
           source={PatternBG}
           resizeMode="repeat"
           style={{ flex: 1, ...s.container, paddingTop: 20 + insets.top, paddingBottom: 20 + insets.bottom }}
-          imageStyle={{ opacity: 0.2 }}>
+          imageStyle={{ opacity: 0.1 }}>
           {errorMessage && (
             <Card
               style={{
@@ -315,7 +315,7 @@ function LoginScreen({ }) {
                 <Text variant="labelLarge" style={s.subtitle}>
                   Welcome to{' '}
                   <Text variant="labelLarge" style={{ color: colors.primary }}>
-                    Offsides
+                    Offsides+
                   </Text>
                   , a third-party client for Sidechat/YikYak
                 </Text>

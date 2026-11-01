@@ -79,11 +79,9 @@ function HomeScreen({ navigation }) {
   }, []);
 
   React.useEffect(() => {
-    crashlytics().log('Setting group color');
-    if (currentGroup?.color) {
-      const t = createMaterial3Theme(currentGroup.color.includes("#") ? currentGroup.color : `#${currentGroup.color}`);
-      setCustomTheme(colorScheme == 'dark' ? t.dark : t.light);
-    }
+    // v1.2.0: no per-group Material You theme anymore - one fixed
+    // YikYak-style dark theme everywhere (see index.js).
+    setCustomTheme(false);
   }, [currentGroup]);
 
   React.useEffect(() => {
@@ -209,7 +207,7 @@ function HomeScreen({ navigation }) {
         }
       />
       {!!currentGroup && !!postSortMethod && (
-        <Appbar.Header style={{ zIndex: 1 }}>
+        <Appbar.Header style={{ zIndex: 1, backgroundColor: colors.background }}>
           <Appbar.Content
             title={
               <GestureDetector gesture={flingGesture}>
@@ -382,7 +380,8 @@ function HomeScreen({ navigation }) {
         {currentGroup?.name && <FAB
           icon="plus"
           label="Post"
-          style={{ position: 'absolute', bottom: 20 + insets.bottom, right: 20 }}
+          color="#000000"
+          style={{ position: 'absolute', bottom: 20 + insets.bottom, right: 20, backgroundColor: colors.primary }}
           onPress={() =>
             navigation.push('Writer', {
               mode: 'post',
