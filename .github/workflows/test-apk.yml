@@ -20,31 +20,19 @@ jobs:
           swap-storage: false
           android: false
 
-      - name: Try to reuse the APK from the last successful build
-        continue-on-error: true
-        uses: actions/download-artifact@v4
-        with:
-          name: offsides-plus-apk
-          run-id: 41293732181
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: apk
-
       - uses: actions/setup-java@v4
-        if: hashFiles('apk/app-release.apk') == ''
         with:
           distribution: temurin
           java-version: '17'
 
       - uses: actions/setup-node@v4
-        if: hashFiles('apk/app-release.apk') == ''
         with:
           node-version: '20'
 
-      - name: Rebuild APK (only when reuse found nothing)
-        if: hashFiles('apk/app-release.apk') == ''
+      - name: Build test APK (adds x86_64 slice for the emulator)
         run: |
           npm ci
-          cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon
+          cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,x86_64 --no-daemon
           mkdir -p ../apk && cp app/build/outputs/apk/release/app-release.apk ../apk/
 
       - name: Free disk space for the emulator image
