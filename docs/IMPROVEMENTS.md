@@ -182,3 +182,13 @@ questions are scope (identity/group-scoped vs account-wide, test by
 posting in another group and by sending a DM) and appeal via Sidechat
 support. Confirmed working in the same screenshot: draft kept after
 the failed send, 255-char counter, v1.2.0 dark composer.
+
+Emulator verification (run 41327596267, dual-ABI preview build): the
+Preview screen rendered all sample cards - community + "• time"
+header, teal upvote cluster on the upvoted post, gray outline cluster
+at 512, poll pill bar with "63 votes · 12%" and "512 votes" total,
+own anonymous post with no username. Zero FATAL EXCEPTIONs, process
+alive, JS running. Both screenshots carry an Android "Process system
+isn't responding" dialog - that is the CI emulator's own system
+process under load, not the app (same dialog in the v1.1.0 test run's
+environment class); Darek's phone run shows no such issue.
