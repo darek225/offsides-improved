@@ -1,0 +1,90 @@
+name: Test APK on emulator
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Try to reuse the APK from the last successful build
+        id: dl
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: offsides-plus-apk
+          run-id: 41293732181
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: apk
+
+      - name: Build the APK if reuse failed
+        if: steps.dl.outcome == 'failure'
+        run: |
+          echo "Artifact reuse failed, rebuilding"
+          ls apk || true
+
+      - uses: actions/setup-java@v4
+        if: steps.dl.outcome == 'failure'
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-node@v4
+        if: steps.dl.outcome == 'failure'
+        with:
+          node-version: '20'
+
+      - name: Rebuild APK
+        if: steps.dl.outcome == 'failure'
+        run: |
+          npm ci
+          cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon
+          mkdir -p ../apk && cp app/build/outputs/apk/release/app-release.apk ../apk/
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install, launch, screenshot
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: Nexus 6
+          disable-animations: true
+          script: |
+            set +e
+            echo "== installing =="
+            adb install -r apk/app-release.apk 2>&1 | tee install.txt
+            echo "== launching =="
+            adb shell am start -n com.darekanderson.offsides/.MainActivity
+            sleep 30
+            adb exec-out screencap -p > shot-1-launch.png
+            echo "== resumed activity =="
+            adb shell dumpsys activity activities | grep -i -m2 "resumed\|topResumed" | tee resumed.txt
+            echo "== process alive? =="
+            adb shell pidof com.darekanderson.offsides | tee pid.txt
+            sleep 10
+            adb exec-out screencap -p > shot-2-after10s.png
+            adb logcat -d > logcat.txt
+            echo "== done =="
+            exit 0
+
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-test-evidence
+          path: |
+            shot-1-launch.png
+            shot-2-after10s.png
+            logcat.txt
+            install.txt
+            resumed.txt
+            pid.txt
+          if-no-files-found: warn
