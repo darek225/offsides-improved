@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Free runner disk space (emulator image + userdata need ~10 GB)
-        uses: jlumbroso/free-disk-space@v1
+        uses: jlumbroso/free-disk-space@v1.3.1
         with:
           tool-cache: true
           dotnet: true
