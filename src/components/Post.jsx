@@ -130,7 +130,7 @@ function Post({
             <Text variant="labelLarge" style={{ marginLeft: 10 }}>
               {timesago(post.created_at)}
             </Text>
-            {post.identity.name != 'Anonymous' && (
+            {hasUsername ? (
               <Text
                 variant="labelMedium"
                 onPress={canOpenProfile ? openProfile : undefined}
@@ -139,8 +139,16 @@ function Post({
                   opacity: 0.75,
                   color: canOpenProfile ? colors.primary : undefined,
                 }}>
-                @{post.identity.name}
+                @{identity.name}
               </Text>
+            ) : (
+              post.authored_by_user && (
+                <Text
+                  variant="labelMedium"
+                  style={{ marginLeft: 10, opacity: 0.75 }}>
+                  Anonymous (you)
+                </Text>
+              )
             )}
           </View>
           {post.authored_by_user && (

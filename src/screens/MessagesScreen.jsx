@@ -40,9 +40,14 @@ function MessageScreen({ navigation }) {
     if (manual) {
       setManualRefreshing(true);
     }
-    const d = await API.getDMs();
-    setDMs(d);
-    setManualRefreshing(false);
+    try {
+      const d = await API.getDMs();
+      setDMs(d || []);
+    } catch (e) {
+      // Keep the existing list; a failed poll must not wedge the spinner.
+    } finally {
+      setManualRefreshing(false);
+    }
   };
 
   return (

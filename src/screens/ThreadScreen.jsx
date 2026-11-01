@@ -18,6 +18,17 @@ import { sha256 } from 'js-sha256';
 import useInterval from '../hooks/useInterval';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 
+// The Sidechat/YikYak server dedupes DM sends by client_id: a second send
+// carrying the same client_id returns HTTP 200 echoing the FIRST message and
+// creates nothing new. The old code passed sha256(Android ID) - the same
+// value for every message - so only the first DM in a thread ever landed
+// (upstream issues #83/#105/#106). Generate a fresh client_id per send; it
+// stays a 64-char sha256 hex string, so the wire format is unchanged.
+const newClientID = async () => {
+  const id = await DeviceInfo.getAndroidId();
+  return sha256(`${id}-${Date.now()}-${Math.random()}-${Math.random()}`);
+};
+
 function ThreadScreen({ navigation, route }) {
   const { postID, chatID } = route.params;
   const {
@@ -31,6 +42,8 @@ function ThreadScreen({ navigation, route }) {
   const [isFetching, setIsFetching] = React.useState(false);
   const [manualRefreshing, setManualRefreshing] = React.useState(false);
   const [messageDraft, setMessageDraft] = React.useState('');
+  const [sendError, setSendError] = React.useState(false);
+  const fetchingRef = React.useRef(false);
 
   React.useEffect(() => {
     if (isFocused) {
@@ -48,34 +61,65 @@ function ThreadScreen({ navigation, route }) {
     }
   }, 5000);
 
-  const fetchMessages = async manual => {
-    if (!isFetching) {
-      setIsFetching(true);
-      if (manual) {
-        setManualRefreshing(true);
-      }
-      const d = await API.getDMThread(chatID);
-      setMessages(d.messages);
+  const fetchMessages = async (manual, idOverride) => {
+    const id = idOverride || chatID;
+    if (!id || fetchingRef.current) {
+      return;
+    }
+    fetchingRef.current = true;
+    setIsFetching(true);
+    if (manual) {
+      setManualRefreshing(true);
+    }
+    try {
+      const d = await API.getDMThread(id);
+      // Inverted list renders newest first; sort explicitly instead of
+      // relying on the old inverted + column-reverse double inversion,
+      // which made older messages vanish in long threads (#83).
+      const sorted = [...(d.messages || [])].sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at),
+      );
+      setMessages(sorted);
       setMeta(d);
+    } catch (e) {
+      // Poll failures are transient; keep the current messages on screen.
+    } finally {
       setManualRefreshing(false);
       setIsFetching(false);
+      fetchingRef.current = false;
     }
   };
 
   const sendMessage = async () => {
-    const id = await DeviceInfo.getAndroidId();
-    const deviceID = sha256(id);
-    setMessageDraft('');
-    await API.sendDM(chatID, messageDraft, deviceID);
-    await fetchMessages(false);
+    const draft = messageDraft;
+    if (!draft.trim()) {
+      return;
+    }
+    try {
+      await API.sendDM(chatID, draft, await newClientID());
+      setMessageDraft('');
+      setSendError(false);
+      await fetchMessages(false);
+    } catch (e) {
+      // Keep the draft so a failed send is never silently lost.
+      setSendError(true);
+    }
   };
 
   const startThread = async () => {
-    const id = await DeviceInfo.getAndroidId();
-    const deviceID = sha256(id);
-    setMessageDraft('');
-    const newDM = await API.startDM(messageDraft, deviceID, postID);
-    navigation.setParams({ chatID: newDM.chat.id });
+    const draft = messageDraft;
+    if (!draft.trim()) {
+      return;
+    }
+    try {
+      const newDM = await API.startDM(draft, await newClientID(), postID);
+      setMessageDraft('');
+      setSendError(false);
+      navigation.setParams({ chatID: newDM.chat.id });
+      await fetchMessages(false, newDM.chat.id);
+    } catch (e) {
+      setSendError(true);
+    }
   };
 
   const leaveChat = async () => {
@@ -115,7 +159,6 @@ function ThreadScreen({ navigation, route }) {
         contentContainerStyle={{
           padding: 10,
           gap: 10,
-          flexDirection: 'column-reverse',
         }}
         data={messages}
         onRefresh={() => fetchMessages(true)}
@@ -152,6 +195,12 @@ function ThreadScreen({ navigation, route }) {
           </TouchableRipple>
         )}
       />
+      {sendError && (
+        <Text
+          style={{ color: colors.error, paddingHorizontal: 12, paddingVertical: 6 }}>
+          Message failed to send. Your draft is still here - tap send to retry.
+        </Text>
+      )}
       <KeyboardStickyView>
         <TextInput
           value={messageDraft}

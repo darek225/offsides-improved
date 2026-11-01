@@ -13,8 +13,8 @@ const AutoVideo = ({
 }) => {
   const aspect = React.useMemo(() => {
     return srcHeight / srcWidth;
-  }, []);
-  return React.useCallback(
+  }, [srcHeight, srcWidth]);
+  return (
     <View
       style={{
         borderRadius: 7,
@@ -37,8 +37,7 @@ const AutoVideo = ({
         controls={true}
         useTextureView={false}
       />
-    </View>,
-    [],
+    </View>
   );
 };
 

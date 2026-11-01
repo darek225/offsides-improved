@@ -36,6 +36,11 @@ function WriterScreen({ navigation, route }) {
   const [isUploading, setIsUploading] = React.useState(false);
   const [postSortMethod, setPostSortMethod] = useMMKVString('postSortMethod');
   const [anonMode, setAnonMode] = useMMKVBoolean('anonMode');
+  // MMKV returns undefined until the toggle is first touched, and
+  // sidechat.js treats undefined as anonymous=false - so first-time users
+  // silently posted under their username. YikYak's default is anonymous:
+  // make that explicit here and always pass a real boolean to the API.
+  const anon = anonMode ?? true;
   const [asset, setAsset] = React.useState(
     /** @type {SidechatSimpleAsset} */(null),
   );
@@ -76,51 +81,47 @@ function WriterScreen({ navigation, route }) {
   const isPollValid = !isPoll || pollOptions.every(opt => opt.trim().length > 0);
 
   const createPostOrComment = async () => {
-    if (mode == 'post') {
-      const validPollOptions = isPoll ? pollOptions : undefined;
+    // The API returns an error object (or throws) on failure; the old code
+    // treated a missing result as success and navigated away, so failed
+    // posts/comments vanished with no feedback (#91). Only leave this
+    // screen when the server actually created the content.
+    try {
+      if (mode == 'post') {
+        const validPollOptions = isPoll ? pollOptions : undefined;
 
-      const p = await API.createPost(
-        textContent,
-        groupID,
-        asset ? [asset] : [],
-        null,
-        null,
-        anonMode,
-        repostID,
-        validPollOptions,
-      );
-      if (!p?.message) {
-        setPostSortMethod('recent');
-        navigation.replace('Home');
-      }
-    } else if (mode == 'comment') {
-      if (parentID) {
+        const p = await API.createPost(
+          textContent,
+          groupID,
+          asset ? [asset] : [],
+          null,
+          null,
+          anon,
+          repostID,
+          validPollOptions,
+        );
+        if (p && !p?.message) {
+          setPostSortMethod('recent');
+          navigation.replace('Home');
+          return;
+        }
+      } else if (mode == 'comment') {
         const c = await API.createComment(
           postID,
           textContent,
           groupID,
           replyID,
-          parentID,
+          parentID || null,
           asset ? [asset] : [],
           null,
-          anonMode);
-        if (!c?.message) {
+          anon);
+        if (c && !c?.message) {
           navigation.pop();
-        }
-      } else {
-        const c = await API.createComment(
-          postID,
-          textContent,
-          groupID,
-          replyID,
-          null,
-          asset ? [asset] : [],
-          null,
-          anonMode);
-        if (!c?.message) {
-          navigation.pop();
+          return;
         }
       }
+      setError(true);
+    } catch (e) {
+      setError(true);
     }
   };
 
@@ -159,16 +160,16 @@ function WriterScreen({ navigation, route }) {
         <Appbar.Content title={`New ${mode}`} />
         <Tooltip title="Anonymous mode">
           <Appbar.Action
-            icon={anonMode ? 'incognito' : 'incognito-off'}
+            icon={anon ? 'incognito' : 'incognito-off'}
             onPress={() =>
-              setAnonMode(!anonMode)
+              setAnonMode(!anon)
             }
           />
         </Tooltip>
         <Appbar.Action
           icon="send"
           onPress={createPostOrComment}
-          disabled={textContent.length < 1 || !isPollValid}
+          disabled={textContent.length < 1 || textContent.length > 255 || !isPollValid}
         />
       </Appbar.Header>
       <ProgressBar
@@ -201,9 +202,9 @@ function WriterScreen({ navigation, route }) {
             value={textContent}
             onChangeText={val => setTextContent(val)}
           />
-          <ProgressBar style={{ marginHorizontal: 11, marginBottom: 5, borderRadius: 10 }} animatedValue={textContent.length / 256} color={textContent.length > 256 ? colors.error : undefined} />
-          <Text style={{ marginHorizontal: 10, marginBottom: 10, color: textContent.length <= 256 ? colors.onSurface : colors.error }} variant="labelLarge">
-            {textContent.length} / 256 chars
+          <ProgressBar style={{ marginHorizontal: 11, marginBottom: 5, borderRadius: 10 }} animatedValue={textContent.length / 255} color={textContent.length > 255 ? colors.error : undefined} />
+          <Text style={{ marginHorizontal: 10, marginBottom: 10, color: textContent.length <= 255 ? colors.onSurface : colors.error }} variant="labelLarge">
+            {textContent.length} / 255 chars
           </Text>
           {mode === 'post' && isPoll && (
             <View style={{ marginHorizontal: 10, marginBottom: 10 }}>

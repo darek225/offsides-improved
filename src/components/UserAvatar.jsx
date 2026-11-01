@@ -21,7 +21,10 @@ function UserAvatar({
       groupName: group.name,
     });
   }, [group]);
-  return React.useCallback(
+  // Do NOT wrap this JSX in useCallback with [] deps: FlashList recycles
+  // cells, and a frozen first render keeps showing the previous post's
+  // emoji/avatar on recycled cards (#67/#87).
+  return (
     <>
       {conversationIcon?.emoji || numberAlias ? (
         <>
@@ -59,8 +62,7 @@ function UserAvatar({
           onPress={switchToGroup}
         />
       )}
-    </>,
-    [],
+    </>
   );
 }
 

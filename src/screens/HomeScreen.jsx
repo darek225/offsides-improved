@@ -141,7 +141,10 @@ function HomeScreen({ navigation }) {
             }
             setLoadingPosts(false);
           },
-        );
+        ).catch(e => {
+          crashlytics().recordError(e);
+          setLoadingPosts(false);
+        });
       } else {
         crashlytics().log('Fetch triggered by scroll at end of list');
         API.getGroupPosts(
@@ -153,6 +156,9 @@ function HomeScreen({ navigation }) {
             setPosts(posts.concat(res.posts.filter(i => i.id)));
             setCursor(res.cursor);
           }
+          setLoadingPosts(false);
+        }).catch(e => {
+          crashlytics().recordError(e);
           setLoadingPosts(false);
         });
       }
