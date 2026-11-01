@@ -9,6 +9,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Free runner disk space (emulator image + userdata need ~10 GB)
+        uses: jlumbroso/free-disk-space@v1
+        with:
+          tool-cache: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: false
+          android: false
+
       - name: Try to reuse the APK from the last successful build
         continue-on-error: true
         uses: actions/download-artifact@v4
