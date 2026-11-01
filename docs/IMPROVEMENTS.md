@@ -118,4 +118,18 @@ maintainer. API layer: micahlt/sidechat.js 2.6.6. Audit date: 2026-11-01.
   these changes (ESLint 9 installed against a legacy `.eslintrc.js`, and
   eslint-plugin-react-native then crashes on `context.getScope`).
   Pre-existing; fixing the lint toolchain is a separate chore.
-- A full APK build needs the Android SDK / EAS; not run on the audit VM.
+- Full APK built 2026-11-01 via GitHub Actions on this repo (workflow
+  `.github/workflows/build-apk.yml`, run 41293732181). A local VM build
+  turned out to be impossible: this sandbox deadlocks the Gradle
+  client-daemon handshake on loopback (proven with `gradle help` on an
+  empty project), and a VM replacement wiped the apt-installed JDK
+  mid-task. Artifact verified after download: package
+  com.darekanderson.offsides, versionName 1.1.0 / versionCode 62,
+  minSdk 24, targetSdk 36, arm64-v8a only, 48 MB, Hermes bundle present,
+  signed with the repo's debug keystore (upstream's release key is not
+  available). Two CI fixes were needed along the way: google-services.json
+  is gitignored upstream (committed here, retargeted to the new package
+  id; Crashlytics still reports to upstream's Firebase project
+  offsides-for-android, harmless for a sideloaded build), and the Kotlin
+  sources had to move to the new package so generated R/BuildConfig
+  resolve.
