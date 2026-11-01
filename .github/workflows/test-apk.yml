@@ -10,7 +10,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Try to reuse the APK from the last successful build
-        id: dl
         continue-on-error: true
         uses: actions/download-artifact@v4
         with:
@@ -19,29 +18,28 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: apk
 
-      - name: Build the APK if reuse failed
-        if: steps.dl.outcome == 'failure'
-        run: |
-          echo "Artifact reuse failed, rebuilding"
-          ls apk || true
-
       - uses: actions/setup-java@v4
-        if: steps.dl.outcome == 'failure'
+        if: hashFiles('apk/app-release.apk') == ''
         with:
           distribution: temurin
           java-version: '17'
 
       - uses: actions/setup-node@v4
-        if: steps.dl.outcome == 'failure'
+        if: hashFiles('apk/app-release.apk') == ''
         with:
           node-version: '20'
 
-      - name: Rebuild APK
-        if: steps.dl.outcome == 'failure'
+      - name: Rebuild APK (only when reuse found nothing)
+        if: hashFiles('apk/app-release.apk') == ''
         run: |
           npm ci
           cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon
           mkdir -p ../apk && cp app/build/outputs/apk/release/app-release.apk ../apk/
+
+      - name: Free disk space for the emulator image
+        run: |
+          rm -rf node_modules android/app/build android/build ~/.gradle/caches ~/.gradle/wrapper
+          df -h / | tail -1
 
       - name: Enable KVM
         run: |
