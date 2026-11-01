@@ -491,6 +491,15 @@ function LoginScreen({ }) {
               </Card.Content>
             )}
           </Card>
+          <Text
+            variant="bodySmall"
+            style={{
+              textAlign: 'center',
+              marginTop: 14,
+              color: colors.onSurfaceDisabled,
+            }}>
+            Offsides+ by Darek Anderson · based on Offsides by Micah Lindley
+          </Text>
         </ImageBackground>
       </View>
     </>

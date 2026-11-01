@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StatusBar, ScrollView, Linking, Image } from 'react-native';
+import { View, StatusBar, ScrollView, Linking, Image, Alert, ToastAndroid } from 'react-native';
 import {
   Appbar,
   Button,
@@ -35,6 +35,27 @@ function SettingsScreen({ navigation }) {
     storage.clearAll();
     RNRestart.restart();
   };
+  const API = appState.API;
+  const unhideAll = () => {
+    Alert.alert(
+      'Unhide all users?',
+      'Posts from users you hid with "Hide posts from this user" will show again.',
+      [
+        { text: 'Cancel' },
+        {
+          text: 'Unhide all',
+          onPress: async () => {
+            try {
+              await API.unhidePostsFromAllUsers();
+              ToastAndroid.show('All users unhidden', ToastAndroid.SHORT);
+            } catch (e) {
+              ToastAndroid.show("Couldn't unhide users", ToastAndroid.SHORT);
+            }
+          },
+        },
+      ],
+    );
+  };
   return (
     <View style={{ backgroundColor: colors.background, flex: 1 }}>
       <StatusBar animated={true} backgroundColor={colors.elevation.level2} />
@@ -51,14 +72,20 @@ function SettingsScreen({ navigation }) {
           style={{ marginBottom: 15 }}></Avatar.Image>
         <Text variant="bodyLarge" style={{ textAlign: 'center' }}>
           <Text variant="headlineSmall" style={{ color: colors.primary, fontWeight: "bold" }}>
-            Offsides{' '}
+            Offsides+{' '}
           </Text>
           <Text variant="headlineSmall">version {version}</Text>
         </Text>
         <Text
           style={{ textAlign: 'center', marginBottom: 10, marginTop: -2 }}
           variant="labelLarge">
-          a third-party client for Sidechat
+          a third-party client for Sidechat/YikYak
+        </Text>
+        <Text
+          style={{ textAlign: 'center', marginBottom: 4 }}
+          variant="labelLarge">
+          Improved fork maintained by{' '}
+          <Text style={{ color: colors.primary }}>Darek Anderson</Text>
         </Text>
         <View
           style={{
@@ -78,13 +105,13 @@ function SettingsScreen({ navigation }) {
           </Button>
           <Button
             mode="contained-tonal"
-            onPress={() => Linking.openURL('https://offsides.micahlindley.com')}
+            onPress={() => Linking.openURL('https://github.com/darek225/offsides-improved')}
             style={{
               maxWidth: '50%',
               marginTop: 10,
               marginBottom: 20,
             }}>
-            Website
+            GitHub
           </Button>
         </View>
         {updateAvailable && (
@@ -112,7 +139,7 @@ function SettingsScreen({ navigation }) {
                 mode="elevated"
                 onPress={() => {
                   Linking.openURL(
-                    `https://github.com/micahlt/offsides/releases/${updateAvailable.latestVersion}/`,
+                    `https://github.com/darek225/offsides-improved/releases/tag/v${updateAvailable.latestVersion}`,
                   );
                 }}>
                 Get Update
@@ -120,17 +147,35 @@ function SettingsScreen({ navigation }) {
             </Card.Actions>
           </Card>
         )}
-        <Card>
-          <Card.Title title="Support Development"
+        <Card style={{ width: '90%', marginBottom: 15 }}>
+          <Card.Title title="About & Credits"
             titleVariant="titleMedium"
             titleStyle={{ color: colors.primary, minHeight: 20 }} />
           <Card.Content>
-            <Text>Offsides is a solo project by Micah Lindley.  I write and maintain this app for free on my own time.  If you want to support development of features and bugfixes, you can buy me a coffee.</Text>
+            <Text>
+              Offsides+ is an improved fork of Offsides, maintained by Darek
+              Anderson. It fixes DMs, adds group chats and poll results, and
+              reskins the app to match YikYak. The original Offsides was
+              created by Micah Lindley - if the app helps you, consider
+              supporting him too.
+            </Text>
           </Card.Content>
           <Card.Actions>
-            <Button mode="contained" onPress={() => Linking.openURL("https://buymeacoffee.com/micahlt")}>Support</Button>
+            <Button onPress={() => Linking.openURL('https://github.com/darek225/offsides-improved')}>
+              Offsides+ GitHub
+            </Button>
+            <Button onPress={() => Linking.openURL("https://buymeacoffee.com/micahlt")}>
+              Support Micah
+            </Button>
           </Card.Actions>
         </Card>
+        <Button
+          mode="outlined"
+          icon="eye-outline"
+          onPress={unhideAll}
+          style={{ marginBottom: 15 }}>
+          Unhide all users
+        </Button>
         <Divider />
         <Text
           style={{
@@ -157,10 +202,9 @@ function SettingsScreen({ navigation }) {
             color: colors.onSurfaceDisabled,
           }}
           variant="bodySmall">
-          Offsides is an open-source project. Its source code is publicly
-          available and may be modified and distributed under the terms of the
-          MIT License. This project is not affiliated with Sidechat or its
-          developers.
+          Offsides+ is an unofficial third-party client and is not
+          affiliated with Sidechat, YikYak, or Flower Ave. Based on
+          Offsides by Micah Lindley.
         </Text>
       </ScrollView>
     </View>

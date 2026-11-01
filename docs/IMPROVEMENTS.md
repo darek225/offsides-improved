@@ -192,3 +192,39 @@ alive, JS running. Both screenshots carry an Android "Process system
 isn't responding" dialog - that is the CI emulator's own system
 process under load, not the app (same dialog in the v1.1.0 test run's
 environment class); Darek's phone run shows no such issue.
+
+## Batch 3 / v1.3.0 - unwired API features, crediting, public release prep (2026-11-01)
+
+Method: diffed all 42 sidechat.js methods against app call sites.
+Never called by upstream: searchAvailableGroups, unhidePostsFromAllUsers,
+getAssetLibrary, getCurrentUser, getUserContent (its URL has the same
+missing-? bug), plus internals.
+
+- **Server-side group search** (ExploreGroups): was a local filter over
+  a small preloaded list; now debounced API.searchAvailableGroups for
+  queries >= 2 chars, local list restored when the query clears.
+- **Unhide all users** (Settings): API.unhidePostsFromAllUsers behind a
+  confirm dialog. Completes batch 2's hide-posts-from-user (was one-way).
+- **Your library** (Writer): API.getAssetLibrary picker strip above the
+  composer bar - reuse previously uploaded images/memes (the real app's
+  Recents row). Response shape is undocumented; items are normalized
+  defensively (string or object URLs), failures show an empty state.
+- **Update checks repointed**: needsUpdate() read upstream's
+  offsides.micahlindley.com/latest.json and Settings linked upstream's
+  releases - an "update" would have replaced the fork with the
+  unmaintained original. Now reads this repo's GitHub latest release;
+  the card links the matching release tag.
+- **Crediting**: Settings header names Offsides+ with "Improved fork
+  maintained by Darek Anderson"; About & Credits card credits Darek
+  (fork) and Micah Lindley (original, with his support link kept);
+  Website button became the fork's GitHub; login screen footer carries
+  the same credit line; README rewritten for the public repo with a
+  credits section. Removed the footer's MIT claim - upstream ships no
+  LICENSE file, so the fork does not assert a license it cannot grant;
+  the README states the situation plainly instead.
+- package.json version was still 1.0.1 (Settings displayed it and the
+  update check compared against it): all version fields now 1.3.0/64.
+- Skipped on evidence: getCurrentUser (documented fields carry no
+  account status, low value), getUserContent (buggy URL, overlaps
+  existing profile endpoints), DM notifications (no Android push
+  channel exists server-side).

@@ -1,6 +1,6 @@
 import { SidechatSimpleAsset } from 'sidechat.js/src/types/SidechatTypes.js';
 import React, { useEffect } from 'react';
-import { View, StatusBar, Image } from 'react-native';
+import { View, StatusBar, Image, ScrollView } from 'react-native';
 import {
   Appbar,
   useTheme,
@@ -49,6 +49,37 @@ function WriterScreen({ navigation, route }) {
     /** @type {SidechatPostOrComment} */(null),
   );
   const [isPoll, setIsPoll] = React.useState(false);
+  const [showLibrary, setShowLibrary] = React.useState(false);
+  const [libraryItems, setLibraryItems] = React.useState(null);
+  // "Your library" = images/memes already uploaded to the account's
+  // asset library (API.getAssetLibrary, never wired up upstream) -
+  // the Recents row in the real app's meme picker.
+  const toggleLibrary = async () => {
+    const next = !showLibrary;
+    setShowLibrary(next);
+    if (next && libraryItems === null) {
+      try {
+        const items = await API.getAssetLibrary();
+        const normalized = (items || [])
+          .map(it => {
+            const url = typeof it?.url === 'string' ? it.url : it?.url?.url;
+            if (!url) return null;
+            return {
+              url,
+              type: 'image',
+              height: it.height || 0,
+              width: it.width || 0,
+              content_type: it.content_type || 'jpeg',
+              id: it.id || url.split('/v1/assets/library/')[1] || url,
+            };
+          })
+          .filter(Boolean);
+        setLibraryItems(normalized);
+      } catch (e) {
+        setLibraryItems([]);
+      }
+    }
+  };
   const [pollOptions, setPollOptions] = React.useState(['', '']);
 
   const addPollOption = () => {
@@ -264,6 +295,79 @@ function WriterScreen({ navigation, route }) {
             <Post themeColors={colors} apiInstance={API} post={repost} repost={true} minimal={true} />
           </View>}
         </View>
+        {!asset && (
+          <View
+            style={{
+              backgroundColor: colors.elevation.level5,
+              paddingHorizontal: 15,
+              paddingTop: 6,
+            }}>
+            <TouchableRipple
+              onPress={toggleLibrary}
+              borderless={true}
+              style={{ borderRadius: BORDER_RADIUS, alignSelf: 'flex-start' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  padding: 4,
+                }}>
+                <Icon source="image-multiple" size={20} color={colors.primary} />
+                <Text
+                  variant="labelLarge"
+                  style={{ color: colors.primary, marginLeft: 6 }}>
+                  Your library
+                </Text>
+                <Icon
+                  source={showLibrary ? 'chevron-up' : 'chevron-down'}
+                  size={20}
+                  color={colors.primary}
+                />
+              </View>
+            </TouchableRipple>
+            {showLibrary &&
+              (libraryItems === null ? (
+                <ActivityIndicator animating={true} style={{ marginVertical: 12 }} />
+              ) : libraryItems.length === 0 ? (
+                <Text
+                  variant="bodySmall"
+                  style={{ color: colors.onSurfaceVariant, paddingVertical: 8 }}>
+                  Nothing here yet. Images you upload will show up for reuse.
+                </Text>
+              ) : (
+                <ScrollView
+                  horizontal={true}
+                  showsHorizontalScrollIndicator={false}
+                  style={{ paddingVertical: 8 }}>
+                  {libraryItems.map(item => (
+                    <TouchableRipple
+                      key={item.id}
+                      borderless={true}
+                      style={{ borderRadius: BORDER_RADIUS, marginRight: 10 }}
+                      onPress={() => {
+                        setAsset(item);
+                        setShowLibrary(false);
+                      }}>
+                      <Image
+                        source={{
+                          uri: item.url,
+                          headers: {
+                            Authorization: `Bearer ${API.userToken}`,
+                          },
+                        }}
+                        style={{
+                          width: 64,
+                          height: 64,
+                          borderRadius: BORDER_RADIUS,
+                        }}
+                        resizeMode="cover"
+                      />
+                    </TouchableRipple>
+                  ))}
+                </ScrollView>
+              ))}
+          </View>
+        )}
         <View
           style={{
             backgroundColor: colors.elevation.level5,

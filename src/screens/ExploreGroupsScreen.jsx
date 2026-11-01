@@ -17,6 +17,7 @@ function ExploreGroupsScreen({ navigation }) {
   const { appState } = React.useContext(AppContext);
   const API = appState.API;
   const [groups, setGroups] = React.useState(false);
+  const [allGroups, setAllGroups] = React.useState(false);
   const [currentGroup, setCurrentGroup] = useMMKVObject("currentGroup");
   const [loading, setLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -26,9 +27,37 @@ function ExploreGroupsScreen({ navigation }) {
   }, []);
   const loadGroups = async () => {
     const g = await API.getAvailableGroups();
-    setGroups(g.filter(g => g.name));
+    const filtered = g.filter(g => g.name);
+    setGroups(filtered);
+    setAllGroups(filtered);
     setLoading(false);
   };
+
+  // Server-side search (API.searchAvailableGroups) once the query is
+  // long enough; the preloaded local list only covers a subset of
+  // groups, so local filtering alone missed most of them.
+  React.useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) {
+      if (allGroups) setGroups(allGroups);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        const results = await API.searchAvailableGroups(q);
+        if (!cancelled && Array.isArray(results)) {
+          setGroups(results.filter(g => g.name));
+        }
+      } catch (e) {
+        // Keep the local filter results on failure.
+      }
+    }, 450);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [searchQuery]);
 
   const renderGroup = item => {
     const group = item.item;
