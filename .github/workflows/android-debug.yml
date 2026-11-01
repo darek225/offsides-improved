@@ -1,0 +1,67 @@
+name: Nightly debug build
+
+on: [push, pull_request]
+
+permissions: write-all
+
+jobs:
+  apk_gen:
+    name: Nightly debug build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code from the current repository
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Reconfigure git to use HTTP
+        run: >
+          git config --global url."https://github.com/".insteadOf
+          ssh://git@github.com/
+
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: adopt
+          cache: gradle
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install app dependencies
+        run: npm install
+
+      - name: Make ./gradlew command executable
+        run: cd android && chmod +x ./gradlew && cd ..
+
+      - name: Generate APK
+        run: cd android && ./gradlew assembleRelease
+
+      - name: Set short git commit SHA
+        id: vars
+        run: |
+          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+          echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
+
+      - name: Rename APK
+        run: mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/offsides-nightly-${{ env.COMMIT_SHORT_SHA }}.apk
+
+      - name: Create prerelease
+        # Pull requests from forks get a read-only token, so publishing a
+        # release would 403. Building the APK is enough of a check for a PR.
+        if: github.event_name == 'push'
+        uses: ncipollo/release-action@v1.14.0
+        with:
+          name: ${{ env.COMMIT_SHORT_SHA }} [NIGHTLY]
+          artifacts: android/app/build/outputs/apk/release/offsides-nightly-${{ env.COMMIT_SHORT_SHA }}.apk
+          artifactContentType: application/vnd.android.package-archive
+          body: This is a release created automatically from commit ${{ github.sha }}.  It has not been tested - do not use if you are not prepared for bugs and glitches.  Instead, try the [latest versioned release](https://github.com/micahlt/offsides/releases/latest).
+          prerelease: true
+          allowUpdates: true
+          tag: ${{ env.COMMIT_SHORT_SHA }}

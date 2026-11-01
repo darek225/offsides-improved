@@ -1,0 +1,371 @@
+import '../types/OffsidesTypes.js';
+import React from 'react';
+import { View, Alert, Linking, Pressable } from 'react-native';
+import { Badge, Button, Card, Chip, IconButton, Text, useTheme } from 'react-native-paper';
+import { setStringAsync as copyToClipboard } from 'expo-clipboard';
+import timesago from 'timesago';
+import { AppContext } from '../App.jsx';
+import AutoImage from './AutoImage';
+import UserAvatar from './UserAvatar.jsx';
+import Poll from './Poll.jsx';
+import { useSharedVote, castVote } from '../utils/voteStore';
+const BORDER_RADIUS = 10;
+
+/**
+ * @param {{ comment: SidechatPostOrComment }} props
+ * @returns
+ */
+function Comment({ comment, nav, isolated = false }) {
+  const { appState } = React.useContext(AppContext);
+  const API = appState.API;
+  const { colors } = useTheme();
+  const [vote, voteCount] = useSharedVote(comment.id, comment.vote_status, comment.vote_total);
+  const [width, setWidth] = React.useState();
+
+  const applyVote = action => castVote(API, comment.id, vote, voteCount, action);
+  const upvote = () => applyVote(vote == 'upvote' ? 'none' : 'upvote');
+  const downvote = () => applyVote(vote == 'downvote' ? 'none' : 'downvote');
+
+  const canOpenProfile =
+    !!nav &&
+    !!comment?.identity?.posted_with_username &&
+    !!comment?.identity?.name &&
+    comment.identity.name != 'Anonymous';
+  const openProfile = () => {
+    if (!canOpenProfile) return;
+    if (comment.authored_by_user) {
+      nav.push('MyProfile');
+    } else {
+      nav.push('UserProfile', { username: comment.identity.name });
+    }
+  };
+
+  const deleteComment = () => {
+    Alert.alert('Are you sure?', 'This will permanently delete this comment.', [
+      {
+        text: 'Confirm',
+        onPress: async () => {
+          await API.deletePostOrComment(comment.id);
+          nav.goBack();
+        },
+      },
+      {
+        text: 'Cancel',
+      },
+    ]);
+  };
+
+  return (
+    <Card
+      style={{
+        marginLeft: isolated
+          ? 0
+          : comment.reply_post_id != comment.parent_post_id
+            ? 20
+            : 0,
+      }}
+      onLayout={event => {
+        setWidth(event.nativeEvent.layout.width);
+      }}
+      mode="contained">
+      <Card.Content>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Pressable
+            style={{ position: 'relative' }}
+            onPress={openProfile}
+            disabled={!canOpenProfile}
+            hitSlop={4}>
+            <UserAvatar
+              group={comment.group}
+              conversationIcon={comment?.identity?.conversation_icon}
+              numberAlias={
+                !comment?.identity?.posted_with_username
+                  ? comment.identity.name
+                  : false
+              }
+              size={46}
+              hideGroup={true}
+              borderRadius={BORDER_RADIUS}
+            />
+            {comment.authored_by_user && (
+              <Badge mode="outlined" compact={true} style={{ position: 'absolute', bottom: -8, right: -8, color: colors.onPrimary, backgroundColor: colors.primary }}>YOU</Badge>
+            )}
+          </Pressable>
+          <View
+            style={{
+              justifyContent: 'center',
+              flexDirection: 'column',
+              flex: 1,
+            }}>
+            {comment.identity.name != 'Anonymous' &&
+              comment?.identity?.posted_with_username && (
+                <Text
+                  variant="labelMedium"
+                  onPress={canOpenProfile ? openProfile : undefined}
+                  style={{
+                    marginLeft: 10,
+                    opacity: 0.75,
+                    color: canOpenProfile ? colors.primary : undefined,
+                  }}>
+                  @{comment.identity.name}
+                </Text>
+              )}
+            {comment.reply_comment_alias && (
+              <Text
+                variant="titleMedium"
+                style={{
+                  marginLeft: 10,
+                  paddingRight: 10,
+                  color: colors.onSurfaceDisabled,
+                  borderRightColor: colors.surfaceVariant,
+                  borderRightWidth: 1,
+                }}>
+                ▶ {comment.reply_comment_alias}
+              </Text>
+            )}
+            {!comment?.identity?.posted_with_username && (
+              <Text variant="labelLarge" style={{ marginLeft: 10 }}>
+                {timesago(comment.created_at)}
+              </Text>
+            )}
+          </View>
+          {comment?.identity?.posted_with_username && (
+            <Text
+              variant="labelLarge"
+              style={{ marginLeft: 10, flex: 1, textAlign: 'right' }}>
+              {timesago(comment.created_at)}
+            </Text>
+          )}
+          {comment.authored_by_user && (
+            <IconButton
+              icon="delete"
+              size={20}
+              style={{ marginRight: 0 }}
+              onPress={deleteComment}
+            />
+          )}
+        </View>
+
+        {comment.text.trim().length > 0 && (
+          <Text variant="bodyLarge" style={{ marginTop: 10, marginBottom: 10 }}>
+            {comment.text}
+          </Text>
+        )}
+
+        {width &&
+          // Assets are things like images and videos
+          comment.assets.map(asset => (
+            <React.Fragment key={asset.id}>
+              {asset.type == 'image' && (
+                <AutoImage
+                  src={asset.url}
+                  fitWidth={width - 35}
+                  srcWidth={asset.width}
+                  srcHeight={asset.height}
+                  token={API.userToken}
+                  style={
+                    comment.text.trim().length < 1
+                      ? { marginTop: 10, marginBottom: 10 }
+                      : { marginBottom: 10 }
+                  }
+                />
+              )}
+              {asset.type == 'video' && (
+                <AutoVideo
+                  fitWidth={width - 35}
+                  srcWidth={asset.width}
+                  srcHeight={asset.height}
+                  token={API.userToken}
+                  src={asset.url}
+                  format={asset.content_type}
+                  poster={asset.thumbnail_asset.url}
+                  style={
+                    comment.text.trim().length < 1
+                      ? { marginTop: 10, marginBottom: 10 }
+                      : { marginBottom: 10 }
+                  }
+                />
+              )}
+            </React.Fragment>
+          ))}
+        {width &&
+          // Attachments are things like links and embeds
+          comment.attachments.map(att => (
+            <React.Fragment key={att.id}>
+              {!!att?.youtube_id ? (
+                <Chip
+                  icon="youtube"
+                  style={{
+                    marginRight: 'auto',
+                    marginBottom: 5,
+                    maxWidth: '100%',
+                    overflow: 'hidden',
+                  }}
+                  onPress={() => Linking.openURL(att.link_url)}
+                  onLongPress={async () => await copyToClipboard(att.link_url)}>
+                  {att.title}
+                </Chip>
+              ) : att.type == 'link' ? (
+                <Chip
+                  icon="link"
+                  style={{
+                    marginRight: 'auto',
+                    marginBottom: 5,
+                    maxWidth: '100%',
+                    overflow: 'hidden',
+                  }}
+                  onPress={() => Linking.openURL(att.link_url)}
+                  onLongPress={async () => await copyToClipboard(att.link_url)}>
+                  {att.display_url}
+                </Chip>
+              ) : (
+                <></>
+              )}
+            </React.Fragment>
+          ))}
+
+        {comment?.poll && <Poll poll={comment.poll} />}
+
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginLeft: -8,
+            marginBottom: -2,
+          }}>
+          {!isolated && (
+            <IconButton
+              icon="chat-outline"
+              onPress={() =>
+                nav.push('Thread', {
+                  postID: comment.id,
+                  type: 'comment',
+                })
+              }
+              style={{ margin: 0 }}
+              size={24}
+              iconColor={colors.onSurfaceDisabled}
+            />
+          )}
+          {isolated ? (
+            <Button
+              mode="text"
+              onPress={() =>
+                nav.push('Comments', {
+                  postID: comment.parent_post_id,
+                })
+              }>
+              View on post
+            </Button>
+          ) : (
+            <Button
+              mode="text"
+              onPress={() => {
+                if (comment.parent_post_id == comment.reply_post_id) {
+                  nav.push('Writer', {
+                    mode: 'comment',
+                    postID: comment.parent_post_id,
+                    replyID: comment.id,
+                    groupID: comment.group.id,
+                  });
+                } else {
+                  nav.push('Writer', {
+                    mode: 'comment',
+                    postID: comment.parent_post_id,
+                    parentID: comment.reply_post_id,
+                    replyID: comment.id,
+                    groupID: comment.group.id,
+                  });
+                }
+              }
+              }>
+              Reply
+            </Button>
+          )}
+          <View style={{ flexGrow: 1 }}></View>
+          <IconButton
+            icon="arrow-up-thick"
+            onPress={upvote}
+            style={{
+              margin: 0,
+            }}
+            size={12}
+            iconColor={
+              vote == 'upvote' ? colors.onPrimaryContainer : colors.onSurface
+            }
+            containerColor={
+              vote == 'upvote' ? colors.inversePrimary : colors.surfaceDisabled
+            }
+          />
+          <Text
+            variant="titleMedium"
+            style={{
+              marginRight: 10,
+              marginLeft: 10,
+              color: voteCount <= 0 ? colors.error : colors.primary,
+            }}>
+            {voteCount}
+          </Text>
+          <IconButton
+            icon="arrow-down-thick"
+            onPress={downvote}
+            style={{
+              margin: 0,
+            }}
+            size={12}
+            iconColor={vote == 'downvote' ? colors.onError : colors.onSurface}
+            containerColor={
+              vote == 'downvote' ? colors.error : colors.surfaceDisabled
+            }
+          />
+        </View>
+      </Card.Content>
+    </Card>
+  );
+}
+
+export default Comment;
+
+const obj = {
+  index: 0,
+  item: {
+    alias: 'Anonymous',
+    assets: [],
+    attachments: [],
+    authored_by_user: false,
+    comment_count: 0,
+    context: '',
+    created_at: '2024-03-06T05:20:40.471Z',
+    destination: 'group',
+    dms_disabled: false,
+    follow_status: 'not_following',
+    group: {
+      analytics_name: 'mc',
+      asset_library_visibility: 'show',
+      color: '#0DD5B2',
+      group_join_type: 'email_domain',
+      group_visibility: 'private',
+      id: 'e953e1cc-7e17-46b9-b11a-98441e4135fe',
+      membership_type: 'member',
+      name: 'MC',
+      roles: [Array],
+    },
+    group_id: 'e953e1cc-7e17-46b9-b11a-98441e4135fe',
+    id: '3555428a-90a8-4046-b9a9-f37eea09ab19',
+    identity: { name: '#1', posted_with_username: false },
+    is_saved: false,
+    parent_post_id: '3f918f1b-acaf-4746-9afd-3a10b97e1c6d',
+    pinned: false,
+    reply_post_id: '3f918f1b-acaf-4746-9afd-3a10b97e1c6d',
+    tags: [],
+    text: 'Fr',
+    type: 'comment',
+    vote_status: 'none',
+    vote_total: 1,
+  },
+  separators: {
+    highlight: [Function],
+    unhighlight: [Function],
+    updateProps: [Function],
+  },
+};
