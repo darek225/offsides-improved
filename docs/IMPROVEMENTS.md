@@ -228,3 +228,14 @@ missing-? bug), plus internals.
   account status, low value), getUserContent (buggy URL, overlaps
   existing profile endpoints), DM notifications (no Android push
   channel exists server-side).
+
+Verification (v1.3.0): expo export compiles; GitHub Actions build run
+41361413218 succeeded (APK verified: com.darekanderson.offsides,
+versionName 1.3.0, versionCode 64, ~49.9 MB arm64); emulator run
+41361418415 succeeded (install Success, MainActivity RESUMED, zero
+FATAL EXCEPTIONs, preview renders). GitHub release v1.3.0 created
+with the APK attached, so the repointed in-app update check has a
+real target. Repo stays private pending Micah's reply to
+micahlt/offsides#110 (publication permission request, opened
+2026-11-01 at Darek's direction; a watcher hook checks for replies
+every 6 hours).
