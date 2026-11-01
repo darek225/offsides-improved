@@ -32,6 +32,7 @@ function WriterScreen({ navigation, route }) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const [error, setError] = React.useState(false);
+  const [errorText, setErrorText] = React.useState('');
   const [textContent, setTextContent] = React.useState('');
   const [isUploading, setIsUploading] = React.useState(false);
   const [postSortMethod, setPostSortMethod] = useMMKVString('postSortMethod');
@@ -99,10 +100,13 @@ function WriterScreen({ navigation, route }) {
           repostID,
           validPollOptions,
         );
-        if (p && !p?.message) {
+        if (p && p.id) {
           setPostSortMethod('recent');
           navigation.replace('Home');
           return;
+        }
+        if (p?.message) {
+          setErrorText(String(p.message));
         }
       } else if (mode == 'comment') {
         const c = await API.createComment(
@@ -114,13 +118,17 @@ function WriterScreen({ navigation, route }) {
           asset ? [asset] : [],
           null,
           anon);
-        if (c && !c?.message) {
+        if (c && c.id) {
           navigation.pop();
           return;
+        }
+        if (c?.message) {
+          setErrorText(String(c.message));
         }
       }
       setError(true);
     } catch (e) {
+      setErrorText(e?.message || '');
       setError(true);
     }
   };
@@ -375,8 +383,13 @@ function WriterScreen({ navigation, route }) {
           )}
         </View>
       </View>
-      <Snackbar visible={error} onDismiss={() => setError(false)}>
-        Sorry, there was an error creating this {mode}.
+      <Snackbar
+        visible={error}
+        duration={6000}
+        onDismiss={() => setError(false)}>
+        {errorText
+          ? `Server said: ${errorText}`
+          : `Sorry, there was an error creating this ${mode}. Your text is still here.`}
       </Snackbar>
     </View>
   );

@@ -17,6 +17,24 @@ function Poll({ poll }) {
   const API = appState.API;
   const { colors } = useTheme();
   const [localPoll, setLocalPoll] = React.useState(poll);
+  const [revealed, setRevealed] = React.useState(false);
+
+  const totalVotes = (localPoll?.choices || []).reduce(
+    (sum, c) => sum + (c.count || 0),
+    0,
+  );
+  const showResults = localPoll?.participated || revealed;
+
+  const viewResults = React.useCallback(() => {
+    API.viewPollResults(localPoll.id)
+      .then(res => {
+        if (res?.poll?.choices) {
+          setLocalPoll(res.poll);
+        }
+        setRevealed(true);
+      })
+      .catch(() => setRevealed(true));
+  }, [localPoll]);
 
   const setVote = React.useCallback((choiceIndex) => {
     if (localPoll.participated) {
@@ -65,14 +83,48 @@ function Poll({ poll }) {
             ) : (
               <></>
             )}
-            {!!option?.count ? (
-              <Text variant="bodySmall">{option.count} votes</Text>
-            ) : (
-              <></>
+            {showResults && (
+              <Text variant="bodySmall">
+                {option.count || 0} votes
+                {totalVotes > 0
+                  ? ` · ${Math.round(((option.count || 0) / totalVotes) * 100)}%`
+                  : ''}
+              </Text>
             )}
           </View>
+          {showResults && totalVotes > 0 && (
+            <View
+              style={{
+                height: 4,
+                borderRadius: 2,
+                backgroundColor: colors.surfaceVariant,
+                marginTop: -8,
+                marginBottom: 5,
+                overflow: 'hidden',
+              }}>
+              <View
+                style={{
+                  height: '100%',
+                  width: `${Math.round(((option.count || 0) / totalVotes) * 100)}%`,
+                  backgroundColor: colors.primary,
+                }}
+              />
+            </View>
+          )}
         </TouchableRipple>
       ))}
+      {!showResults && (
+        <TouchableRipple
+          onPress={viewResults}
+          borderless={true}
+          style={{ borderRadius: 10, alignSelf: 'flex-start' }}>
+          <Text
+            variant="labelLarge"
+            style={{ color: colors.primary, paddingVertical: 4 }}>
+            View results
+          </Text>
+        </TouchableRipple>
+      )}
     </View>
   );
 }

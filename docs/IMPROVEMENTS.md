@@ -55,22 +55,48 @@ maintainer. API layer: micahlt/sidechat.js 2.6.6. Audit date: 2026-11-01.
    The real limit is 255, the writer used 256. Fixed the counter, the
    progress bar, and send is disabled over 255.
 
-## Present in the API but missing from the app (not yet built)
+## Second pass (v1.1.0, this fork)
 
-- **Group chats**: sidechat.js has `getGroupChats` / `joinGroupChat`
-  (`/v1/chats/explore`, `/v1/chats/groups/join`); the app has no UI for
-  them. Upstream PRs #108 and #103 both attempt this and are the starting
-  point.
-- **Block / hide a user**: `hidePostsFromUser` / `unhidePostsFromAllUsers`
-  exist in sidechat.js (since 2.6.2) but are never called by the app.
-  Partial answer to #58; true DM delete/block was never reverse
-  engineered upstream.
-- **Group search**: `searchAvailableGroups` exists; Explore only lists.
-- **Poll results viewing**: `viewPollResults` exists; app only votes.
+7. **Post/reply failures are now diagnosable.** Darek (and upstream #91)
+   could not post or reply at all: the writer treated the API's error
+   response as success and threw the text away. In addition to the
+   first-pass fix, sidechat.js is now patched (patch-package, see
+   `patches/`) so a rejected post/comment returns the server's response
+   body, and the writer shows it verbatim ("Server said: ...") instead
+   of a generic error. If an account-side restriction is the cause, the
+   app will now say what it is.
+8. **Group chats.** Messages screen has DMs / Group chats tabs: joined
+   group chats, an explore list, and a join flow (choose a display name
+   or join anonymously, reusing your username + icon). Group threads
+   show sender names and a group title. This needed a sidechat.js fix
+   first: `getGroupChats` built a broken URL (`/v1/chats/explore&...`
+   instead of `?...`), so explore could never have worked.
+9. **Photos in DMs and group chats.** The send endpoint accepts assets;
+   the thread screen now has a photo button (upload + send), and image
+   messages render inline.
+10. **Hide posts from a user** (block-lite, #58 partial). Overflow menu
+    on other people's posts calls `hidePostsFromUser`, which upstream
+    never wired up. True DM delete/block was never reverse engineered.
+11. **Poll results.** Percentages + bars after voting, and a "View
+    results" button that reveals results without voting. Also needed
+    the sidechat.js URL fix (`/v1/polls/view_results&...`).
+12. **UI pass.** Messages: tabs, named group cards with member counts,
+    proper empty states. Explore groups: fixed the member-count sort
+    (comparator returned a boolean, so ordering was garbage). Renamed
+    the app "Offsides+" with its own package id
+    (`com.darekanderson.offsides`) so it installs next to the original
+    instead of fighting its signature.
+
+## Still missing / not built
+
+- **Group search**: `searchAvailableGroups` exists in the API; Explore
+  still only locally filters the full list (fine at current sizes).
 - **DM notifications** (#65): the server pushes only to iOS (APNs). On
   Android the only option is opt-in background polling, with battery
   cost; upstream maintainer declined to build it. Candidate as an
   off-by-default setting.
+- **Leave a group chat / delete a DM**: no endpoint has been reverse
+  engineered for either.
 
 ## Needs a live account / real device to verify
 
@@ -85,7 +111,7 @@ maintainer. API layer: micahlt/sidechat.js 2.6.6. Audit date: 2026-11-01.
 
 ## Build verification (2026-11-01, this fork)
 
-- `npm ci`: OK, 1,334 packages installed clean.
+- `npm ci`: OK, 1,334 packages installed clean (patch-package applies the sidechat.js fixes on postinstall).
 - `npx expo export --platform android`: OK, produced a 5.41 MB Hermes
   bundle - every JS/JSX file in the app compiles with the fixes in.
 - ESLint: cannot run - upstream's lint setup is broken independent of

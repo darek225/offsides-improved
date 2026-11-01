@@ -49,7 +49,7 @@ function ExploreGroupsScreen({ navigation }) {
 
   const groupsSearched = React.useMemo(() => {
     if (groups) {
-      return groups.sort((a, b) => a.member_count < b.member_count).filter(item => {
+      return groups.sort((a, b) => (b.member_count || 0) - (a.member_count || 0)).filter(item => {
         if (
           item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           searchQuery.toLowerCase().includes(item.name.toLowerCase()) ||

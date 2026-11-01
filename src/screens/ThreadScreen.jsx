@@ -17,6 +17,10 @@ import DeviceInfo from 'react-native-device-info';
 import { sha256 } from 'js-sha256';
 import useInterval from '../hooks/useInterval';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
+import { launchImageLibrary } from 'react-native-image-picker';
+import AutoImage from '../components/AutoImage';
+import { groupChatName, isGroupChat, senderName } from '../utils/groupChats';
+import { useWindowDimensions } from 'react-native';
 
 // The Sidechat/YikYak server dedupes DM sends by client_id: a second send
 // carrying the same client_id returns HTTP 200 echoing the FIRST message and
@@ -30,7 +34,7 @@ const newClientID = async () => {
 };
 
 function ThreadScreen({ navigation, route }) {
-  const { postID, chatID } = route.params;
+  const { postID, chatID, title } = route.params;
   const {
     appState: { API },
   } = React.useContext(AppContext);
@@ -43,7 +47,11 @@ function ThreadScreen({ navigation, route }) {
   const [manualRefreshing, setManualRefreshing] = React.useState(false);
   const [messageDraft, setMessageDraft] = React.useState('');
   const [sendError, setSendError] = React.useState(false);
+  const [isUploading, setIsUploading] = React.useState(false);
   const fetchingRef = React.useRef(false);
+  const { width: screenWidth } = useWindowDimensions();
+  const isGroup =
+    !!route.params.isGroup || isGroupChat(meta) || !!title;
 
   React.useEffect(() => {
     if (isFocused) {
@@ -123,7 +131,52 @@ function ThreadScreen({ navigation, route }) {
   };
 
   const leaveChat = async () => {
-    return; // Waiting for sidechat.js implementation
+    return; // No leave endpoint has been reverse engineered yet.
+  };
+
+  // Pick a photo, upload it, and send it into this chat. DMs and group
+  // chats accept assets on the same /v1/chats/send endpoint; the app
+  // simply never wired the button up.
+  const sendPhoto = async () => {
+    if (!chatID || isUploading) {
+      return;
+    }
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      quality: 0.9,
+      maxHeight: 1800,
+      maxWidth: 1800,
+    });
+    if (result.didCancel || result.errorMessage || !result.assets?.[0]) {
+      return;
+    }
+    setIsUploading(true);
+    try {
+      const photo = result.assets[0];
+      const assetURL = await API.uploadAsset(
+        photo.uri,
+        photo.type,
+        photo.fileName,
+      );
+      const asset = {
+        url: assetURL,
+        type: 'image',
+        height: photo.height,
+        width: photo.width,
+        content_type: photo.type.split('/')[1],
+        id: assetURL.split('/v1/assets/library/')[1],
+      };
+      await API.sendDM(chatID, messageDraft.trim(), await newClientID(), [
+        asset,
+      ]);
+      setMessageDraft('');
+      setSendError(false);
+      await fetchMessages(false);
+    } catch (e) {
+      setSendError(true);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const goToSource = async () => {
@@ -145,7 +198,9 @@ function ThreadScreen({ navigation, route }) {
     <View style={{ backgroundColor: colors.background, flex: 1 }}>
       <Appbar.Header elevated={true}>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content title="Thread" />
+        <Appbar.Content
+          title={isGroup ? title || groupChatName(meta) : 'Thread'}
+        />
         <Tooltip title="Show context">
           <Appbar.Action
             icon="note-text-outline"
@@ -183,9 +238,31 @@ function ThreadScreen({ navigation, route }) {
                   : colors.elevation.level1,
               }}
               mode="flat">
-              <Text style={{ color: colors.onSurface }} variant="bodyLarge">
-                {item.text}
-              </Text>
+              {isGroup && !item.authored_by_user && senderName(item) && (
+                <Text
+                  style={{ color: colors.primary, fontWeight: 'bold' }}
+                  variant="labelLarge">
+                  {senderName(item)}
+                </Text>
+              )}
+              {item.assets
+                ?.filter(a => a?.url && a.type == 'image')
+                .map(asset => (
+                  <AutoImage
+                    key={asset.id || asset.url}
+                    src={asset.url}
+                    fitWidth={screenWidth - 110}
+                    srcWidth={asset.width || 1}
+                    srcHeight={asset.height || 1}
+                    token={API.userToken}
+                    style={{ marginTop: 5, marginBottom: item.text ? 8 : 5 }}
+                  />
+                ))}
+              {!!item.text && (
+                <Text style={{ color: colors.onSurface }} variant="bodyLarge">
+                  {item.text}
+                </Text>
+              )}
               <Text
                 style={{ color: colors.onSurfaceDisabled }}
                 variant="labelMedium">
@@ -215,6 +292,15 @@ function ThreadScreen({ navigation, route }) {
           autoFocus={true}
           placeholder="Send a message"
           style={{ paddingBottom: insets.bottom }}
+          left={
+            chatID ? (
+              <TextInput.Icon
+                icon={isUploading ? 'loading' : 'image-outline'}
+                disabled={isUploading}
+                onPress={() => sendPhoto()}
+              />
+            ) : undefined
+          }
           right={
             <TextInput.Icon
               icon="send"

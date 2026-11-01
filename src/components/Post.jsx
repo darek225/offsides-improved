@@ -1,7 +1,7 @@
 import { SidechatPostOrComment } from 'sidechat.js/src/types/SidechatTypes.js';
 import React, { useState } from 'react';
-import { Alert, Linking, Pressable, View } from 'react-native';
-import { Card, Chip, IconButton, Text, useTheme } from 'react-native-paper';
+import { Alert, Linking, Pressable, ToastAndroid, View } from 'react-native';
+import { Card, Chip, IconButton, Menu, Text, useTheme } from 'react-native-paper';
 import { setStringAsync as copyToClipboard } from 'expo-clipboard';
 import timesago from 'timesago';
 import AutoImage from './AutoImage';
@@ -151,13 +151,15 @@ function Post({
               )
             )}
           </View>
-          {post.authored_by_user && (
+          {post.authored_by_user ? (
             <IconButton
               icon="delete"
               size={20}
               style={{ marginRight: 0 }}
               onPress={deletePost}
             />
+          ) : (
+            !minimal && <PostMenu post={post} API={API} />
           )}
         </View>
 
@@ -386,3 +388,42 @@ const obj = {
     updateProps: [Function],
   },
 };
+
+
+// Overflow menu for other people's posts. "Hide posts from this user" is
+// the closest thing to blocking the API exposes (sidechat.js
+// hidePostsFromUser, never called by upstream Offsides).
+function PostMenu({ post, API }) {
+  const [open, setOpen] = React.useState(false);
+  const hideUser = async () => {
+    setOpen(false);
+    try {
+      await API.hidePostsFromUser(post.id);
+      ToastAndroid.show(
+        'Posts from this user will be hidden',
+        ToastAndroid.SHORT,
+      );
+    } catch (e) {
+      ToastAndroid.show("Couldn't hide this user", ToastAndroid.SHORT);
+    }
+  };
+  return (
+    <Menu
+      visible={open}
+      onDismiss={() => setOpen(false)}
+      anchor={
+        <IconButton
+          icon="dots-vertical"
+          size={20}
+          style={{ marginRight: 0 }}
+          onPress={() => setOpen(true)}
+        />
+      }>
+      <Menu.Item
+        leadingIcon="eye-off-outline"
+        onPress={hideUser}
+        title="Hide posts from this user"
+      />
+    </Menu>
+  );
+}
