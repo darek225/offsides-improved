@@ -275,5 +275,9 @@ release APK attached.
   upstream as sidechat.js PR #13 after 2.7.0 shipped, so the patch
   dies with the next npm release). Patch application verified on a
   clean reinstall; expo export bundles.
-- Crashlytics: Firebase project being swapped from the original
-  author's project to Darek's own (his call: swap, not removal).
+- Crashlytics swapped to Darek's own Firebase project (his call:
+  swap, not removal): project "Offsides Plus" (offsides-plus) under
+  his personal Google account, Android app registered for
+  com.darekanderson.offsides, new google-services.json committed.
+  The Crashlytics SDK was already integrated in the app; it now
+  reports to his console instead of the original author's.
