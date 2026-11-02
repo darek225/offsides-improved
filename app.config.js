@@ -1,7 +1,7 @@
 module.exports = {
   name: 'Offsides+',
   slug: 'offsides',
-  version: '1.3.0',
+  version: '1.3.1',
   platforms: ['android'],
   githubUrl: 'https://github.com/darek225/offsides-improved',
   description: 'Offsides+ - an improved Android client for Sidechat/YikYak: working DMs, group chats, poll results, and a YikYak-style dark design. Fork of Offsides, maintained by Darek Anderson.',
@@ -9,7 +9,7 @@ module.exports = {
   newArchEnabled: true,
   android: {
     package: 'com.darekanderson.offsides',
-    versionCode: 64,
+    versionCode: 65,
     adaptiveIcon: {
       foregroundImage: './src/assets/adaptive-icon.png',
       monochromeImage: './src/assets/adaptive-icon-mono.png',

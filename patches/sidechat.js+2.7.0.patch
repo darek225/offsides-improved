@@ -1,0 +1,44 @@
+diff --git a/node_modules/sidechat.js/dist/index.cjs b/node_modules/sidechat.js/dist/index.cjs
+index 3cc99b6..0015879 100644
+--- a/node_modules/sidechat.js/dist/index.cjs
++++ b/node_modules/sidechat.js/dist/index.cjs
+@@ -1085,7 +1085,7 @@ class SidechatAPIClient {
+       });
+       const json = await res.json();
+       if (!res.ok) throw new SidechatAPIError(json.message);
+-      return await json.comment;
++      return (await json.comment) ?? json;
+     } catch (err) {
+       console.error(err);
+       if (err instanceof SidechatAPIError && err.message) throw err;
+@@ -1151,7 +1151,7 @@ class SidechatAPIClient {
+       });
+       const json = await res.json();
+       if (!res.ok) throw new SidechatAPIError(json.message);
+-      return await json.posts[0];
++      return (await json.posts?.[0]) ?? json;
+     } catch (err) {
+       console.error(err);
+       if (err instanceof SidechatAPIError && err.message) throw err;
+diff --git a/node_modules/sidechat.js/dist/index.mjs b/node_modules/sidechat.js/dist/index.mjs
+index fdd0515..c21ced7 100644
+--- a/node_modules/sidechat.js/dist/index.mjs
++++ b/node_modules/sidechat.js/dist/index.mjs
+@@ -1081,7 +1081,7 @@ class SidechatAPIClient {
+       });
+       const json = await res.json();
+       if (!res.ok) throw new SidechatAPIError(json.message);
+-      return await json.comment;
++      return (await json.comment) ?? json;
+     } catch (err) {
+       console.error(err);
+       if (err instanceof SidechatAPIError && err.message) throw err;
+@@ -1147,7 +1147,7 @@ class SidechatAPIClient {
+       });
+       const json = await res.json();
+       if (!res.ok) throw new SidechatAPIError(json.message);
+-      return await json.posts[0];
++      return (await json.posts?.[0]) ?? json;
+     } catch (err) {
+       console.error(err);
+       if (err instanceof SidechatAPIError && err.message) throw err;

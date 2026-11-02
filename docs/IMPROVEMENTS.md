@@ -257,3 +257,23 @@ sidechat.js PR linked, testing disclosure (personally tested + CI
 emulator only), maintenance commitment. Live at
 https://github.com/darek225/offsides-improved with the v1.3.0
 release APK attached.
+
+## v1.3.1 (in progress)
+
+- sidechat.js bumped 2.6.6 -> 2.7.0 (the published package now carries
+  the URL fixes and res.ok error throws the old patch supplied). Audit
+  before bumping, diffing the published dists: method signatures
+  identical, named exports identical (SidechatAPIClient,
+  SidechatAPIError, SidechatColorList, SidechatTypes). Behavioral
+  deltas in 2.7.0, all backward compatible at the app's call sites:
+  loginViaSMS gained optional useFallback (backup SMS route) and
+  captcha params, defaulting to the old behavior; getChats gained an
+  optional cursor param; group JOIN moved to /v2/groups/join per
+  upstream's newer YikYak APK decompile (leave stays /v1). The
+  patch-package patch shrank to the one change missing from both
+  versions (createPost/createComment error-body fallback, merged
+  upstream as sidechat.js PR #13 after 2.7.0 shipped, so the patch
+  dies with the next npm release). Patch application verified on a
+  clean reinstall; expo export bundles.
+- Crashlytics: Firebase project being swapped from the original
+  author's project to Darek's own (his call: swap, not removal).
