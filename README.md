@@ -65,4 +65,8 @@ There is a dev-only style preview used to screenshot the design in CI without an
 
 ## Disclaimer
 
-Offsides+ is an unofficial third-party client. It is not affiliated with Sidechat, YikYak, or Flower Ave. Use it in line with their terms and your school's policies. The upstream Offsides repository carries no LICENSE file; its in-app text and README describe the project as open source, and this fork is published with full attribution to the original author for personal and educational use.
+Offsides+ is an unofficial third-party client. It is not affiliated with Sidechat, YikYak, or Flower Ave. Use it in line with their terms and your school's policies.
+
+## License
+
+Offsides+ is licensed under the GNU General Public License v3.0, the same license the original author added to Offsides (see [LICENSE](LICENSE)). The sidechat.js library is MIT-licensed upstream. This fork is published with the original author's permission and full attribution.

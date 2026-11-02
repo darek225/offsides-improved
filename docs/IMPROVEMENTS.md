@@ -239,3 +239,15 @@ real target. Repo stays private pending Micah's reply to
 micahlt/offsides#110 (publication permission request, opened
 2026-11-01 at Darek's direction; a watcher hook checks for replies
 every 6 hours).
+
+## Publication approved (2026-11-02)
+
+Micah replied to micahlt/offsides#110: he added the GPLv3 license to
+the upstream repo and explicitly welcomed publishing Offsides+ ("You
+are more than welcome to publish an app known as Offsides+"), offered
+to redirect users from the Offsides landing page if the fork proves
+stable and maintained, made the Buy Me a Coffee link optional
+(kept anyway), and asked for the sidechat.js fixes as a PR to
+micahlt/sidechat.js (the library itself is MIT-licensed upstream).
+GPLv3 LICENSE copied verbatim from upstream into this repo; README
+license section added.
