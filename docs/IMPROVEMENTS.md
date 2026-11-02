@@ -251,3 +251,9 @@ stable and maintained, made the Buy Me a Coffee link optional
 micahlt/sidechat.js (the library itself is MIT-licensed upstream).
 GPLv3 LICENSE copied verbatim from upstream into this repo; README
 license section added.
+Repo flipped PUBLIC on 2026-11-02 after Darek approved the reply to
+Micah (posted on micahlt/offsides#110 the same day): BMC link stays,
+sidechat.js PR linked, testing disclosure (personally tested + CI
+emulator only), maintenance commitment. Live at
+https://github.com/darek225/offsides-improved with the v1.3.0
+release APK attached.
