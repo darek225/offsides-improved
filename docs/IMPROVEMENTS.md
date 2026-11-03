@@ -275,6 +275,17 @@ release APK attached.
   upstream as sidechat.js PR #13 after 2.7.0 shipped, so the patch
   dies with the next npm release). Patch application verified on a
   clean reinstall; expo export bundles.
+- Release signing: dedicated Offsides+ keystore generated
+  2026-11-02 (30-year cert, SHA-256 AE:74:70:2E:80:A3:3D:BA:AD:F8:
+  AC:C4:90:71:95:49:98:DB:42:8B:94:56:3A:65:0B:3C:E9:83:0B:B0:E0:7D),
+  held outside the repo with passwords in GitHub Actions secrets;
+  CI now release-signs instead of debug-signing. One-time cost:
+  installs of the debug-signed builds (up to 1.3.0) must be
+  uninstalled before installing 1.3.1+, because Android treats the
+  new signature as a different app identity. Done now, before any
+  real user base exists, which is the cheapest moment for the break.
+  (Also fixed: android/app/build.gradle still hardcoded
+  versionCode 64 / 1.3.0; it now matches 65 / 1.3.1.)
 - Crashlytics swapped to Darek's own Firebase project (his call:
   swap, not removal): project "Offsides Plus" (offsides-plus) under
   his personal Google account, Android app registered for

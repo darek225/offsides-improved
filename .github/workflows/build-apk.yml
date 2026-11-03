@@ -21,9 +21,17 @@ jobs:
       - name: Install JS dependencies (applies patch-package fixes)
         run: npm ci
 
-      - name: Build release APK (arm64 only)
+      - name: Decode release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.OFFSIDES_KEYSTORE_BASE64 }}
+        run: echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/offsides-release.keystore"
+
+      - name: Build release APK (arm64 only, release-signed)
         working-directory: android
-        run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon
+        env:
+          OFFSIDES_RELEASE_STORE_PASSWORD: ${{ secrets.OFFSIDES_RELEASE_STORE_PASSWORD }}
+          OFFSIDES_RELEASE_KEY_PASSWORD: ${{ secrets.OFFSIDES_RELEASE_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a -POFFSIDES_RELEASE_STORE_FILE="$RUNNER_TEMP/offsides-release.keystore" -POFFSIDES_RELEASE_STORE_PASSWORD="$OFFSIDES_RELEASE_STORE_PASSWORD" -POFFSIDES_RELEASE_KEY_ALIAS=offsides -POFFSIDES_RELEASE_KEY_PASSWORD="$OFFSIDES_RELEASE_KEY_PASSWORD" --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
