@@ -258,7 +258,7 @@ emulator only), maintenance commitment. Live at
 https://github.com/darek225/offsides-improved with the v1.3.0
 release APK attached.
 
-## v1.3.1 (in progress)
+## v1.3.1 (shipped 2026-11-02)
 
 - sidechat.js bumped 2.6.6 -> 2.7.0 (the published package now carries
   the URL fixes and res.ok error throws the old patch supplied). Audit
@@ -292,3 +292,13 @@ release APK attached.
   com.darekanderson.offsides, new google-services.json committed.
   The Crashlytics SDK was already integrated in the app; it now
   reports to his console instead of the original author's.
+
+Verification (v1.3.1): CI build run 41551811313 + emulator run
+41552150131, both success. APK verified locally: versionName 1.3.1,
+versionCode 65, apksigner signer DN "CN=Darek Anderson,
+OU=Offsides Plus" with SHA-256 digest ae74702e...0bb0e07d matching
+the new keystore (not the Android debug key). Emulator: install
+Success, MainActivity RESUMED, zero FATAL EXCEPTIONs, four preview
+screenshots captured (feed, poll results, anonymous card). GitHub
+release v1.3.1 carries the signed APK; the in-app update check now
+offers it, with the one-time uninstall caveat in the release notes.

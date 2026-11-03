@@ -32,6 +32,12 @@ Upstream Offsides was deprecated in favor of the upcoming official YikYak Androi
 
 Full change log with evidence: [docs/IMPROVEMENTS.md](docs/IMPROVEMENTS.md).
 
+## Screenshots
+
+Style-preview captures from the CI emulator (sample data, no live account):
+
+<img src="docs/screenshots/feed-preview.png" width="300" alt="Feed with YikYak-style dark cards"> <img src="docs/screenshots/poll-results.png" width="300" alt="Poll results with percentages and an anonymous post card">
+
 ## Download
 
 Grab the APK from the [latest release](https://github.com/darek225/offsides-improved/releases/latest) and install it manually (this is a reverse-engineered client, so it is not on the Play Store). Offsides+ installs side-by-side with the original Offsides under its own package name, `com.darekanderson.offsides`, so your old install is untouched. You will need to log in once on Offsides+.
