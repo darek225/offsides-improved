@@ -42,7 +42,7 @@ Style-preview captures from the CI emulator (sample data, no live account):
 
 Grab the APK from the [latest release](https://github.com/darek225/offsides-improved/releases/latest) and install it manually (this is a reverse-engineered client, so it is not on the Play Store). Offsides+ installs side-by-side with the original Offsides under its own package name, `com.darekanderson.offsides`, so your old install is untouched. You will need to log in once on Offsides+.
 
-Releases are signed with the repo's debug keystore because the upstream release key is not public. That is also why Android may warn about the install source; the source is all here if you would rather build it yourself.
+Releases from v1.3.1 on are signed with the project's own Offsides+ key (earlier builds used a debug key, which is why installing 1.3.1 over an older build needs a one-time uninstall first). Android may still warn about the install source since this is not a Play Store app; the source is all here if you would rather build it yourself.
 
 ## Build from source
 
