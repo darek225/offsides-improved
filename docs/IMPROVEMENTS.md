@@ -302,3 +302,24 @@ Success, MainActivity RESUMED, zero FATAL EXCEPTIONs, four preview
 screenshots captured (feed, poll results, anonymous card). GitHub
 release v1.3.1 carries the signed APK; the in-app update check now
 offers it, with the one-time uninstall caveat in the release notes.
+
+## v1.3.2 (shipped 2026-11-16)
+
+- SMS fallback login wired up (the one 2.7.0 delta v1.3.1 left
+  unused): sidechat.js 2.7.0's loginViaSMS accepts useFallback,
+  which sends the code through the backup route
+  /v1/login_register_sms_fallback, the route the official app
+  offers when a code does not arrive. LoginScreen now uses it two
+  ways: (1) if the primary request itself fails (the library only
+  throws when no server response arrives; a server error_code is a
+  deliberate answer and still surfaces as before), sendSMS retries
+  once through the backup route; (2) the verify phase gains a
+  "Code never arrived? Use backup route" button next to Resend
+  code, which re-requests the code through the fallback route.
+  verifySMSCode is unchanged; it verifies codes from either route.
+- Status check the same day (the reason this is a maintenance
+  release, not a dependency update): upstream app dormant since
+  2026-11-02, sidechat.js npm latest still 2.7.0 (published before
+  PR #13 merged, so the 4-line patch-package patch is still
+  required), no Sidechat support reply to the identity suspension
+  appeal (sent 2026-11-01, followed up 2026-11-02).

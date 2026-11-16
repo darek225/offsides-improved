@@ -72,16 +72,29 @@ function LoginScreen({ }) {
     }
   }, [phase]);
 
-  const sendSMS = async num => {
+  const sendSMS = async (num, useFallback = false) => {
     setLoading(true);
+    const targetNumber =
+      num != undefined && num.length == 10 ? num : phoneNumber;
     try {
       crashlytics().log(
         `Sending SMS verification code to ${num ? 'AndroidPhoneNumberHint provided' : 'user provided'
-        } number`,
+        } number${useFallback ? ' via backup SMS route' : ''}`,
       );
-      const res = await API.loginViaSMS(
-        num != undefined && num.length == 10 ? num : phoneNumber,
-      );
+      let res;
+      try {
+        res = await API.loginViaSMS(targetNumber, useFallback);
+      } catch (primaryErr) {
+        if (useFallback) throw primaryErr;
+        // loginViaSMS only throws when the request itself fails (no server
+        // response). A server error_code is a deliberate answer and is
+        // handled below; a transport failure is what the backup route in
+        // sidechat.js 2.7.0 exists for, so retry once through it.
+        crashlytics().log(
+          'Primary SMS route request failed, retrying via backup SMS route',
+        );
+        res = await API.loginViaSMS(targetNumber, true);
+      }
       if (res) {
         if (res.error_code) {
           crashlytics().log(`Error sending SMS code: ${res.error_code}`);
@@ -339,7 +352,10 @@ function LoginScreen({ }) {
                   onChangeText={phoneNumber => setPhoneNumber(phoneNumber)}
                 />
 
-                <Button mode="contained" loading={loading} onPress={sendSMS}>
+                <Button
+                  mode="contained"
+                  loading={loading}
+                  onPress={() => sendSMS()}>
                   Send code
                 </Button>
               </Card.Content>
@@ -391,6 +407,19 @@ function LoginScreen({ }) {
                     Resend code
                   </Button>
                 </View>
+                <Button
+                  mode="text"
+                  loading={loading}
+                  onPress={() => {
+                    if (phoneNumber?.length == 10) {
+                      setSmsCode('');
+                      sendSMS(undefined, true);
+                    } else {
+                      setPhase('sendSMS');
+                    }
+                  }}>
+                  Code never arrived? Use backup route
+                </Button>
               </Card.Content>
             )}
             {phase == 'setAge' && (
