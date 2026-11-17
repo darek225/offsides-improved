@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Exclude Firebase modules from autolinking (FOSS only, CI-local edit)
-        run: node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json'));p.expo={...(p.expo||{}),autolinking:{exclude:['@react-native-firebase/app','@react-native-firebase/crashlytics']}};fs.writeFileSync('package.json',JSON.stringify(p,null,2))"
+        run: node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json'));p.expo={...(p.expo||{}),autolinking:{exclude:['@react-native-firebase/app','@react-native-firebase/crashlytics','expo-dev-client','expo-dev-launcher','expo-dev-menu']}};fs.writeFileSync('package.json',JSON.stringify(p,null,2))"
       - name: Build FOSS release APK (no Firebase plugins)
         env:
           EXPO_PUBLIC_FOSS: '1'
