@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Offsides | Sidechat for Android</title>
+    <title>Offsides+ | YikYak and Sidechat for Android</title>
+    <meta
+      name="description"
+      content="Offsides+ is a free, open-source Android client for Sidechat and YikYak. YikYak has no official Android app; Offsides+ gives Android users the same feeds, groups, polls, and DMs. Signed APK downloads, auto-updates via Obtainium." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -16,32 +19,61 @@
     <main>
       <div class="header">
         <div class="header-text">
-          <h1>Offsides</h1>
-          <p>Sidechat/YikYak for Android</p>
+          <h1>Offsides+</h1>
+          <p>YikYak / Sidechat for Android</p>
         </div>
-        <img src="screenshot-mocked.png" class="mockup" />
+        <img
+          src="screenshots/feed-preview.png"
+          class="mockup"
+          alt="Offsides+ feed with YikYak-style dark cards and teal vote buttons" />
         <div class="buttons">
           <a
-            href="https://github.com/micahlt/offsides/releases/latest"
+            href="https://github.com/darek225/offsides-improved/releases/latest"
             rel="noreferrer"
             target="_blank"
             class="primary"
-            >Download</a
+            >Download the APK</a
           >
           <a
-            href="https://github.com/micahlt/offsides"
+            href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/darek225/offsides-improved"
+            rel="noreferrer"
+            target="_blank"
+            >Get it on Obtainium</a
+          >
+          <a
+            href="https://github.com/darek225/offsides-improved"
             rel="noreferrer"
             target="_blank"
             >GitHub</a
           >
-          <a
-            href="https://reddit.com/r/offsides"
-            rel="noreferrer"
-            target="_blank"
-          >Subreddit</a>
-          <p class="soon">Coming soon to Google Play</p>
         </div>
       </div>
+      <section class="facts">
+        <h2>Why Offsides+</h2>
+        <p>
+          YikYak's official app is iOS-only. Its Android app was removed
+          from Google Play in March 2023, when Sidechat bought YikYak.
+          Offsides+ is a maintained, open-source Android client for the
+          same Sidechat/YikYak service, forked from the deprecated
+          Offsides app by Micah Lindley.
+        </p>
+        <ul>
+          <li>DMs that actually send (upstream reused one client_id per thread, so only the first message landed)</li>
+          <li>Group chats, poll results with percentages, server-side group search</li>
+          <li>Anonymous mode that never leaks your username</li>
+          <li>Failed posts keep your draft and show the server's real error</li>
+          <li>YikYak-style dark theme, signed releases, installable alongside the original app</li>
+          <li>Backup SMS login route when your verification code never arrives (v1.3.2)</li>
+        </ul>
+        <p class="fineprint">
+          Offsides+ is a third-party client and is not affiliated with
+          Sidechat or YikYak. Free and open source under GPLv3, maintained
+          by <a href="https://github.com/darek225">Darek Anderson</a>.
+          Original Offsides by Micah Lindley:
+          <a href="https://github.com/micahlt/offsides">upstream repo</a> ·
+          <a href="https://buymeacoffee.com/micahlt">buy him a coffee</a>.
+        </p>
+      </section>
     </main>
   </body>
 </html>
