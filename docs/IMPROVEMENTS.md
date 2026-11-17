@@ -323,3 +323,15 @@ offers it, with the one-time uninstall caveat in the release notes.
   PR #13 merged, so the 4-line patch-package patch is still
   required), no Sidechat support reply to the identity suspension
   appeal (sent 2026-11-01, followed up 2026-11-02).
+
+Verification (v1.3.2): commit 25d7af5; local expo export bundles;
+CI build run 43983833153 + emulator run 43983845914, both success.
+APK verified locally: versionName 1.3.2, versionCode 66, signer
+SHA-256 ae74702e...0b0e07d matching the Offsides+ key (checked via
+apksigner and an independent APK v2 signature-block parse).
+Emulator: install Success, MainActivity RESUMED, zero FATAL
+EXCEPTIONs. GitHub release v1.3.2 carries the signed APK and
+installs over v1.3.1 (same key, no uninstall needed). Same day:
+the GitHub Pages landing page was rebranded to Offsides+ and
+enabled (darek225.github.io/offsides-improved), and the README
+regained its Obtainium badge pointing at this repo.
