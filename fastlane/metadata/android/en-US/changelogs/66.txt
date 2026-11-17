@@ -1,0 +1,1 @@
+SMS fallback login: automatic retry through the backup SMS route when the primary request fails, plus a backup-route resend button on the verify screen.

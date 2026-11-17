@@ -1,0 +1,11 @@
+Offsides+ is a maintained fork of Offsides, the open-source Android client for Sidechat and YikYak. YikYak's official app is iOS-only (its Android app was removed from Google Play in March 2023 when Sidechat bought YikYak); Offsides+ gives Android users the same feeds, groups, polls, and DMs through the Sidechat API.
+
+Fixes over the deprecated upstream app:
+- DMs actually send: upstream reused one client_id per thread and the server deduplicates on it, so only the first message landed. Each send now gets a fresh ID.
+- Failed posts and replies keep your draft and show the server's real error instead of silently vanishing.
+- Anonymous mode defaults on and never renders a username on posts that were not posted with one.
+- Backup SMS login route when your verification code never arrives.
+
+Features: group chats (browse, join, photo send), poll results with percentages viewable without voting, hide posts from a user plus unhide-all in Settings, server-side group search, your uploaded-image library in the composer, and a YikYak-style dark theme.
+
+Free and open source under GPL-3.0, forked with the original author's permission. Signed releases on GitHub; installs side-by-side with the original Offsides under its own package name. Not affiliated with Sidechat or YikYak.
