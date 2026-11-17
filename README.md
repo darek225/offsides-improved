@@ -1,5 +1,7 @@
 # Offsides+
 
+**Website: [darek225.github.io/offsides-improved](https://darek225.github.io/offsides-improved/)**
+
 An improved Android client for [Sidechat](https://sidechat.lol) / YikYak, forked from the (now deprecated) [Offsides](https://github.com/micahlt/offsides) by Micah Lindley and maintained by **Darek Anderson** ([@darek225](https://github.com/darek225)).
 
 Upstream Offsides was deprecated in favor of the upcoming official YikYak Android app, and it shipped with real bugs: DMs silently stopped sending after the first message, posts and replies could vanish without any error, and anonymous mode leaked usernames. Offsides+ fixes those, wires up API features the original never used, and reskins the app to look like the current YikYak app.
