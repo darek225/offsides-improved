@@ -8,7 +8,7 @@ import {
   ProgressBar,
   IconButton,
 } from 'react-native-paper';
-import crashlytics from '@react-native-firebase/crashlytics';
+import crashlytics from '../utils/crashlytics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppContext } from '../App';
 import Post from '../components/Post';

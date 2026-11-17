@@ -193,5 +193,10 @@ dependencies {
     }
 }
 
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
+// FOSS build: pass -PexcludeFirebase to skip both Firebase plugins
+// (pair with EXPO_PUBLIC_FOSS=1; the google-services plugin fails without
+// google-services.json, which the FOSS build does not ship).
+if (!project.hasProperty('excludeFirebase')) {
+    apply plugin: 'com.google.gms.google-services'
+    apply plugin: 'com.google.firebase.crashlytics'
+}
